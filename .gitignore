@@ -1,0 +1,7 @@
+*.d
+*.pdf
+*.root
+*.so
+*C_ACLiC*
+*.swp
+.DS_Store

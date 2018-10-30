@@ -1,0 +1,13 @@
+    //const char *fname="root://eoscms//store/group/phys_heavyions/kjung/pPb_EposMinBias_5TeV_8022_Forest_corrL1/EPOS5TeV_GEN_SIM/crab_pPb_EposMinBias_5TeV_8022_Forest_corrL1/161106_174912/0000"; //old
+   // const char *fname = "root://eoscms//store/group/phys_heavyions/kjung/pPb_EposMinBias_5TeV_8022_Forest/EPOS5TeV_GEN_SIM/crab_pPb_EposMinBias_5TeV_8022_Forest_corrCentrTable/161108_122954/0000"; //new
+   const char *fname =  "/afs/cern.ch/work/q/qixu/public/centrality/Run2Prep/5TeV"; //merged
+  //  const char *histoname = "HiForestAOD_";
+    const char *histoname = "mergeskim_pPb_EposMinBias_5TeV_8022_Forest_corrCentrTable_161108_12295";
+    const int nfilter = 6;
+    const int startpoint = 4;
+    const int nfile = 5;
+    const char* evtfilter[] = {"","(HLT_PAL1MinimumBiasHF_OR_SinglePixelTrack_part1_v1 || HLT_PAL1MinimumBiasHF_OR_SinglePixelTrack_part2_v1 || HLT_PAL1MinimumBiasHF_OR_SinglePixelTrack_part3_v1 || HLT_PAL1MinimumBiasHF_OR_SinglePixelTrack_part4_v1 || HLT_PAL1MinimumBiasHF_OR_SinglePixelTrack_part5_v1 || HLT_PAL1MinimumBiasHF_OR_SinglePixelTrack_part6_v1 || HLT_PAL1MinimumBiasHF_OR_SinglePixelTrack_part7_v1 || HLT_PAL1MinimumBiasHF_OR_SinglePixelTrack_part8_v1)","pBeamScrapingFilter","pPAprimaryVertexFilter","pVertexFilterCutGplus","phfCoincFilter1"};
+    const char* evtfiltershort[] = {"NoFilter","MBTrig","MBTrig_BeamScraping","Trig_BS_VF","Trig_BS_VF_PU","Trig_BS_VF_PU_HFC1"};
+    const char* trig = evtfilter[1];
+    TCut cut = evtfilter[1];
+    const TString type="Epos_5TeV_pPb";

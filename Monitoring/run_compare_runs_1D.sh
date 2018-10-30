@@ -1,0 +1,21 @@
+#HIMinimumBias1
+#root -l -b -q 'compare_runs_1D.C+("HLT_HIL1MinimumBiasHF1AND_v1", "_HLT_HF1AND_nofilter", "HIMinimumBias1")'
+#root -l -b -q 'compare_runs_1D.C+("HLT_HIL1MinimumBiasHF1AND_v1 && phfCoincFilter3", "_HLT_HF1AND_hfcoinc3", "HIMinimumBias1")'
+#root -l -b -q 'compare_runs_1D.C+("HLT_HIL1MinimumBiasHF1AND_v1 && pcollisionEventSelection", "_HLT_HF1AND_pcollisionEvnetSelection", "HIMinimumBias1")'
+root -l -b -q 'compare_runs_1D.C+("HLT_HIL1MinimumBiasHF2AND_v1", "_HLT_HF2AND_nofilter", "HIMinimumBias1")'
+#root -l -b -q 'compare_runs_1D.C+("HLT_HIL1MinimumBiasHF2AND_v1 && phfCoincFilter3", "_HLT_HF2AND_hfcoinc3", "HIMinimumBias1")'
+root -l -b -q 'compare_runs_1D.C+("HLT_HIL1MinimumBiasHF2AND_v1 && pcollisionEventSelection", "_HLT_HF2AND_pcollisionEvnetSelection", "HIMinimumBias1")'
+#root -l -b -q 'compare_runs_1D.C+("HLT_HIL1MinimumBiasHF2AND_part7_v1", "_HLT_HF2AND_part7_nofilter", "HIMinimumBias1")'
+#root -l -b -q 'compare_runs_1D.C+("HLT_HIL1MinimumBiasHF2AND_part7_v1 && phfCoincFilter3", "_HLT_HF2AND_hfcoinc3", "HIMinimumBias1")'
+#root -l -b -q 'compare_runs_1D.C+("HLT_HIL1MinimumBiasHF2AND_part7_v1 && pcollisionEventSelection", "_HLT_HF2AND_part7_pcollisionEvnetSelection", "HIMinimumBias1")'
+
+#HIMinimumBias2
+root -l -b -q 'compare_runs_1D.C+("HLT_HIL1MinimumBiasHF1AND_v1", "_HLT_HF1AND_nofilter", "HIMinimumBias2")'
+#root -l -b -q 'compare_runs_1D.C+("HLT_HIL1MinimumBiasHF1AND_v1 && phfCoincFilter3", "_HLT_HF1AND_hfcoinc3", "HIMinimumBias2")'
+root -l -b -q 'compare_runs_1D.C+("HLT_HIL1MinimumBiasHF1AND_v1 && pcollisionEventSelection", "_HLT_HF1AND_pcollisionEvnetSelection", "HIMinimumBias2")'
+#root -l -b -q 'compare_runs_1D.C+("HLT_HIL1MinimumBiasHF2AND_v1", "_HLT_HF2AND_nofilter", "HIMinimumBias2")'
+#root -l -b -q 'compare_runs_1D.C+("HLT_HIL1MinimumBiasHF2AND_v1 && phfCoincFilter3", "_HLT_HF2AND_hfcoinc3", "HIMinimumBias2")'
+root -l -b -q 'compare_runs_1D.C+("HLT_HIL1MinimumBiasHF2AND_v1 && pcollisionEventSelection", "_HLT_HF2AND_pcollisionEvnetSelection", "HIMinimumBias2")'
+root -l -b -q 'compare_runs_1D.C+("HLT_HIL1MinimumBiasHF2AND_part1_v1", "_HLT_HF2AND_part1_nofilter", "HIMinimumBias2")'
+#root -l -b -q 'compare_runs_1D.C+("HLT_HIL1MinimumBiasHF2AND_part1_v1 && phfCoincFilter3", "_HLT_HF2AND_part1_hfcoinc3", "HIMinimumBias2")'
+root -l -b -q 'compare_runs_1D.C+("HLT_HIL1MinimumBiasHF2AND_part1_v1 && pcollisionEventSelection", "_HLT_HF2AND_part1_pcollisionEvnetSelection", "HIMinimumBias2")'

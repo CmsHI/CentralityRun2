@@ -1,0 +1,9 @@
+{
+    "destinationDatabase": "oracle://cms_orcon_prod/CMS_CONDITIONS", 
+    "destinationTags": {
+        "CentralityTable_HFtowersPlusTrunc200_EPOS5TeV_v80x01_mc": {}
+    }, 
+    "inputTag": "CentralityTable_HFtowersPlusTrunc200_EPOS5TeV_v80x01_mc", 
+    "since": 1, 
+    "userText": "Centrality table for pPb EPOS MC at 5TeV"
+}
