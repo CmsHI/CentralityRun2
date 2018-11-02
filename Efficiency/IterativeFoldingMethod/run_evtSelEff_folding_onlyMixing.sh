@@ -1,0 +1,11 @@
+#void evtSelEff_folding(bool doNoTrigEff=0 string mcName = "HIJING", bool do0=1, bool do1=1, bool do2=1, bool do3=1)
+root -l -b -q 'evtSelEff_folding_onlyMixing.C++(0,"HIJING",1,1,1,1,1)'
+root -l -b -q 'evtSelEff_folding_onlyMixing.C++(0,"EPOSLHC",1,1,1,1,1)'
+root -l -b -q 'evtSelEff_folding_onlyMixing.C++(0,"AMPT",1,1,1,1,1)'
+#root -l -b -q 'evtSelEff_folding_onlyMixing.C++(1,"EPOSLHC",1,1,1,1)'
+#root -l -b -q 'evtSelEff_folding_onlyMixing.C++(1,"AMPT",1,1,0,0)'
+#root -l -b -q 'evtSelEff_folding_onlyMixing.C++(1,"HIJING",1,1,0,0,0)'
+#root -l -b -q 'evtSelEff_folding_onlyMixing.C++(1,"AMPT",0,0,1,1)'
+#root -l -b -q 'evtSelEff_folding_onlyMixing.C++(1,"HIJING",0,0,1,1,0)'
+#root -l -b -q 'test.C++("EPOSLHC",1,1,1,0)'
+#root -l -b -q 'test.C++("AMPT",1,1,1,0)'
