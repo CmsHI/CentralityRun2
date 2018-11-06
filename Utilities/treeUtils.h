@@ -23,12 +23,15 @@ using namespace std;
 // Definition of global variables
 //////////////////////////////////////////////
 
-float hf, hfplus, hfpluseta4, hfminuseta4, hfminus, hfhit,zvtx[332], trkdxy1[332], trkdz1[332],normchi2vtx[332], vtxdist2d[332],trkEta[332],trkPt[332];
-int hiNtrks,ntrk,npix,nvtx,maxmultvtx,maxptvtx,ntrkvtx[332];
-bool highpurity[332];
-UInt_t run/*, lumi*/;
+float hf, hfplus, hfpluseta4, hfminuseta4, hfminus, hfhit,zvtx[10000], trkdxy1[10000], trkdz1[10000],normchi2vtx[10000], vtxdist2d[10000],trkEta[10000],trkPt[10000];
+int nTowers,hiBin,hiNtrks,ntrk,npix,nvtx,maxmultvtx,maxptvtx,ntrkvtx[10000];
+float towerE[4000], towerET[4000], eta[4000];
+int ieta[4000];
+int ProcessID;
+bool highpurity[10000];
+UInt_t run, lumi;
 int HLT_Trigger_part1, HLT_Trigger_part2, HLT_Trigger_part3, HLT_Trigger_part4, HLT_Trigger_part5, HLT_Trigger_part6, HLT_Trigger_part7, HLT_Trigger_part8, HLT_Trigger_part9, HLT_Trigger_part10, HLT_Trigger_part11, HLT_Trigger_part12, HLT_Trigger_part13, HLT_Trigger_part14, HLT_Trigger_part15, HLT_Trigger_part16, HLT_Trigger_part17, HLT_Trigger_part18, HLT_Trigger_part19, HLT_Trigger_part20;
-int pBeamScrapingFilter, pclusterCompatibilityFilter, pprimaryVertexFilter, phfCoincFilter1, phfCoincFilter2, phfCoincFilter3, phfCoincFilter4;
+int pBeamScrapingFilter, pclusterCompatibilityFilter, pprimaryVertexFilter, phfCoincFilter1, phfCoincFilter2, phfCoincFilter3, phfCoincFilter4, phfCoincFilter5;
 
 
 //////////////////////////////////////////////
@@ -129,8 +132,10 @@ bool loadBranches(const char* triggerName, TChain* t)
   }
   
   t->SetBranchAddress("run",	&run);
-  //t->SetBranchAddress("lumi",	&lumi);
+  t->SetBranchAddress("lumi",	&lumi);
+  if (t->GetBranch("ProcessID")) t->SetBranchAddress("ProcessID",	&ProcessID);
   t->SetBranchAddress("hiHF",		&hf);
+  t->SetBranchAddress("hiBin",		&hiBin);
   t->SetBranchAddress("hiHFplus",	&hfplus);
   t->SetBranchAddress("hiHFplusEta4",	&hfpluseta4);
   t->SetBranchAddress("hiHFminus",	&hfminus);
@@ -159,6 +164,13 @@ bool loadBranches(const char* triggerName, TChain* t)
   if (t->GetBranch("phfCoincFilter2")) t->SetBranchAddress("phfCoincFilter2", &phfCoincFilter2);
   if (t->GetBranch("phfCoincFilter3")) t->SetBranchAddress("phfCoincFilter3", &phfCoincFilter3);
   if (t->GetBranch("phfCoincFilter4")) t->SetBranchAddress("phfCoincFilter4", &phfCoincFilter4);
+  if (t->GetBranch("phfCoincFilter5")) t->SetBranchAddress("phfCoincFilter5", &phfCoincFilter5);
+  
+  if (t->GetBranch("n")) t->SetBranchAddress("n", &nTowers);
+  if (t->GetBranch("e")) t->SetBranchAddress("e", &towerE);
+  if (t->GetBranch("et")) t->SetBranchAddress("et", &towerET);
+  if (t->GetBranch("ieta")) t->SetBranchAddress("ieta", &ieta);
+  if (t->GetBranch("eta")) t->SetBranchAddress("eta", &eta);
   
   tArray->Delete();
   return true;
