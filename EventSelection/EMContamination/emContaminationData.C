@@ -1,4 +1,5 @@
-// compute fraction of EM events after event selection
+// compute fraction of EM events after event selection (given HF coincidence filter with n towers) from DATA
+// IMPORTANT NOTE: this method works if the filter with n+1 towers is not contaminated by EM events (so check it!!)
 // Author : Javier Martin Blanco 25/01/2017
 
 //basic c++ header, string ...
@@ -48,19 +49,12 @@
 #include <ctime>
 //private setup
 #include "../../Utilities/drawUtils.h"
-#include "./mbDistributions.C"
+#include "../mbDistributions.C"
 
-TEfficiency* getMCeff(const char* varname,
-                      const char* mcResults,
-                      const char* hfFilter = "2");
-
-bool computeMCeff(const char* mcResults,
-                  const char* hfFilter = "2");
-
-void emContaminationData(const char* hfFilter = "2", // Number of required towers in HF coincidence filter
+void emContaminationData(const char* hfFilter = "3", // Number of required towers in HF coincidence filter
                          const std::vector<bool> recreateDistributions = {false,false}, // {data,MC,EM}
-                         const std::vector<const char*> inputFile = {"dataInputFiles.txt","hydjetInputFiles.txt"},
-                         const std::vector<const char*> sampleLabel = {"DATA","HYDJET"},
+                         const std::vector<const char*> inputFile = {"dataMBInputFiles.txt","eposInputFiles.txt"},
+                         const std::vector<const char*> sampleLabel = {"DATA_MB","EPOSLHC"},
                          const char* colLabel = "XeXe 5.44 TeV",
                          const char* triggerName = "HLT_HIL1MinimumBiasHF_OR_SinglePixelTrack_part1_v1;HLT_HIL1MinimumBiasHF_OR_SinglePixelTrack_part2_v1;HLT_HIL1MinimumBiasHF_OR_SinglePixelTrack_part3_v1;HLT_HIL1MinimumBiasHF_OR_SinglePixelTrack_part4_v1;HLT_HIL1MinimumBiasHF_OR_SinglePixelTrack_part5_v1;HLT_HIL1MinimumBiasHF_OR_SinglePixelTrack_part6_v1;HLT_HIL1MinimumBiasHF_OR_SinglePixelTrack_part7_v1;HLT_HIL1MinimumBiasHF_OR_SinglePixelTrack_part8_v1;HLT_HIL1MinimumBiasHF_OR_SinglePixelTrack_part9_v1;HLT_HIL1MinimumBiasHF_OR_SinglePixelTrack_part10_v1;HLT_HIL1MinimumBiasHF_OR_SinglePixelTrack_part11_v1;HLT_HIL1MinimumBiasHF_OR_SinglePixelTrack_part12_v1;HLT_HIL1MinimumBiasHF_OR_SinglePixelTrack_part13_v1;HLT_HIL1MinimumBiasHF_OR_SinglePixelTrack_part14_v1;HLT_HIL1MinimumBiasHF_OR_SinglePixelTrack_part15_v1;HLT_HIL1MinimumBiasHF_OR_SinglePixelTrack_part16_v1;HLT_HIL1MinimumBiasHF_OR_SinglePixelTrack_part17_v1;HLT_HIL1MinimumBiasHF_OR_SinglePixelTrack_part18_v1;HLT_HIL1MinimumBiasHF_OR_SinglePixelTrack_part19_v1;HLT_HIL1MinimumBiasHF_OR_SinglePixelTrack_part20_v1")
 {
@@ -76,13 +70,18 @@ void emContaminationData(const char* hfFilter = "2", // Number of required tower
     if (recreateDistributions[n])
     {
       cout << "[INFO] Creating distributions for " << sampleLabel[n]  << endl;
-      mbDistributions(inputFile[n],triggerName,sampleLabel[n]);
+      mbDistributions(Form("%s/../../InputFiles/%s",gSystem->pwd(),inputFile[n]),triggerName,sampleLabel[n]);
     }
     
   }
   
-  // Create directory to save the plots
+  TString tLabel(triggerName);
+  if (tLabel.Contains("MinimumBias")) tLabel = "MB";
+  else {cout << "[ERROR] Unkown trigger label" << endl; return;}
+  
+  //Create directory to save the plots
   string mainDIR = gSystem->ExpandPathName(gSystem->pwd());
+  string histosDIR = mainDIR + "/../../DataHistos";
   string saveDIR = mainDIR + "/Results";
   void * dirp = gSystem->OpenDirectory(saveDIR.c_str());
   if (dirp) gSystem->FreeDirectory(dirp);
@@ -93,17 +92,18 @@ void emContaminationData(const char* hfFilter = "2", // Number of required tower
   if (!strcmp(hfFilter,"1")) hfFilterPlus = "2";
   else if (!strcmp(hfFilter,"2")) hfFilterPlus = "3";
   else if (!strcmp(hfFilter,"3")) hfFilterPlus = "4";
-  else {cout << "[ERROR] Cannot compute EM contamination for hfFilter > 3" << endl; return;}
+  else if (!strcmp(hfFilter,"4")) hfFilterPlus = "5";
+  else {cout << "[ERROR] Cannot compute EM contamination for hfFilter > 4" << endl; return;}
   
   const int nvar = 6;
   const char* varname[nvar] = {"hiHF", "hiHFplus", "hiHFminus","hiNtracks","hiHFhit","hiNpix"};
   
   // Read file with mb data distributions
-  TFile *f = TFile::Open(Form("%s/mbDistributions_%s.root",saveDIR.c_str(),sampleLabel[0]));
-  if (!f) {cout << "[ERROR] No file mbDistributions_" << sampleLabel[0] << ".root was found" << endl; return;}
+  TFile *f = TFile::Open(Form("%s/distributions_%s_%s.root",histosDIR.c_str(),sampleLabel[0],tLabel.Data()));
+  if (!f) {cout << "[ERROR] No file distributions_" << sampleLabel[0] << "_" << tLabel.Data() << ".root was found" << endl; return;}
   
   // Get array with histos
-  TObjArray* arrHistos = static_cast<TObjArray*>(f->FindObjectAny("mbDistributions"));
+  TObjArray* arrHistos = static_cast<TObjArray*>(f->FindObjectAny("distributions"));
   if (!arrHistos) {cout << "[ERROR] No histos array found in file " << f->GetName() << endl; return;}
   //
   
@@ -122,12 +122,12 @@ void emContaminationData(const char* hfFilter = "2", // Number of required tower
     
     if (!eff || !effPlus) {cout << "[ERROR] No efficiencies found" << endl; return;}
     
-    hMB_evtSel = static_cast<TH1*>(arrVar->FindObject(Form("hMB_BS_PV_HF%s_%s",shfFilter.Data(),varN.Data())));
-    if (!hMB_evtSel) {cout << "[ERROR] No histo " << Form("hMB_BS_PV_HF%s_%s",shfFilter.Data(),varN.Data()) << " found" << endl; return;}
-    hMB_evtSel_corr = static_cast<TH1*>(hMB_evtSel->Clone(Form("hMB_BS_PV_HF%s_%s_corr",shfFilter.Data(),varN.Data())));
-    hMB_evtSel = static_cast<TH1*>(arrVar->FindObject(Form("hMB_BS_PV_HF%s_%s",hfFilterPlus.Data(),varN.Data())));
-    if (!hMB_evtSel) {cout << "[ERROR] No histo " << Form("hMB_BS_PV_HF%s_%s",hfFilterPlus.Data(),varN.Data()) << " found" << endl; return;}
-    hMB_evtSel_corrPlus = static_cast<TH1*>(hMB_evtSel->Clone(Form("hMB_BS_PV_HF%s_%s_corr",hfFilterPlus.Data(),varN.Data())));
+    hMB_evtSel = static_cast<TH1*>(arrVar->FindObject(Form("h_MB_BS_PV_HF%s_%s",shfFilter.Data(),varN.Data())));
+    if (!hMB_evtSel) {cout << "[ERROR] No histo " << Form("h_MB_BS_PV_HF%s_%s",shfFilter.Data(),varN.Data()) << " found" << endl; return;}
+    hMB_evtSel_corr = static_cast<TH1*>(hMB_evtSel->Clone(Form("h_MB_BS_PV_HF%s_%s_corr",shfFilter.Data(),varN.Data())));
+    hMB_evtSel = static_cast<TH1*>(arrVar->FindObject(Form("h_MB_BS_PV_HF%s_%s",hfFilterPlus.Data(),varN.Data())));
+    if (!hMB_evtSel) {cout << "[ERROR] No histo " << Form("h_MB_BS_PV_HF%s_%s",hfFilterPlus.Data(),varN.Data()) << " found" << endl; return;}
+    hMB_evtSel_corrPlus = static_cast<TH1*>(hMB_evtSel->Clone(Form("h_MB_BS_PV_HF%s_%s_corr",hfFilterPlus.Data(),varN.Data())));
     
     int nBins = hMB_evtSel_corr->GetNbinsX();
     for (int i = 1 ; i <= nBins ; i++)
