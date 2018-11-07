@@ -1,9 +1,10 @@
 #ifndef utils
 #define utils
 #include <TGraphAsymmErrors.h>
+#include <TGraphErrors.h>
 #include <TGraph.h>
-#include <TLegend.h>
 #include <TF1.h>
+#include <TLegend.h>
 #include <TCanvas.h>
 #include <TLatex.h>
 #include <TLine.h>
@@ -38,6 +39,110 @@ using namespace std;
 const int col[] = {1,2,3,4,6,7,28,46,41};
 const int ycol[] = {8,9,28,46,41};
 const int marker[] = {24,25,26,27,28,29,31,33,34};
+
+
+void canvasStyle(TCanvas*& canv,
+		const Float_t leftMargin=0.17,
+        const Float_t bottomMargin=0.12,
+		const Float_t rightMargin=0.07,
+		const Float_t topMargin=0.12
+        ) {
+    canv->SetTopMargin(topMargin);
+    canv->SetBottomMargin(bottomMargin);
+    canv->SetLeftMargin(leftMargin);
+    canv->SetRightMargin(rightMargin);
+}
+
+void rebin2(TH1 *h, Int_t ngx, Int_t ngy)
+{
+   //Rebin 2-d histogram h, grouping ngx bins together along X
+   //and ngy bins together along Y
+   //NB: this macro ignores histogram errors if defined
+
+   //make a clone of h
+   TH1 *hold = (TH1*)h->Clone();
+   hold->SetDirectory(0);
+
+   Int_t  nbinsx = hold->GetXaxis()->GetNbins();
+   Int_t  nbinsy = hold->GetYaxis()->GetNbins();
+   Float_t xmin  = hold->GetXaxis()->GetXmin();
+   Float_t xmax  = hold->GetXaxis()->GetXmax();
+   Float_t ymin  = hold->GetYaxis()->GetXmin();
+   Float_t ymax  = hold->GetYaxis()->GetXmax();
+   Int_t nx = nbinsx/ngx;
+   Int_t ny = nbinsy/ngy;
+   h->SetBins (nx,xmin,xmax,ny,ymin,ymax);
+
+   //loop on all bins to reset contents and errors
+   Double_t cu;
+   Float_t bx,by;
+   Int_t ix,iy,ibin,bin,binx,biny;
+   for (biny=1;biny<=nbinsy;biny++) {
+      for (binx=1;binx<=nbinsx;binx++) {
+         ibin = h->GetBin(binx,biny);
+         h->SetBinContent(ibin,0);
+      }
+   }
+   //loop on all bins and refill
+   for (biny=1;biny<=nbinsy;biny++) {
+      by  = hold->GetYaxis()->GetBinCenter(biny);
+      iy  = h->GetYaxis()->FindBin(by);
+      for (binx=1;binx<=nbinsx;binx++) {
+         bx = hold->GetXaxis()->GetBinCenter(binx);
+         ix  = h->GetXaxis()->FindBin(bx);
+         bin = hold->GetBin(binx,biny);
+         ibin= h->GetBin(ix,iy);
+         cu  = hold->GetBinContent(bin);
+         h->AddBinContent(ibin,cu);
+      }
+   }
+   delete hold;
+}
+
+TH1D* xShiftHist(TH1* h, double shiftVal){
+    ////////////////////////////////////////////////////////////////
+    // X-shift
+    TH1D* h_org = (TH1D*) h->Clone(Form("%s_org",h->GetName()));
+    TH1D* h_xshifted = (TH1D*) h->Clone(Form("%s_xshifted",h->GetName()));
+    int TOTNBINS = h_org->GetNbinsX();
+    for(int ibin=1; ibin<TOTNBINS; ++ibin){
+        double xVal = h_org->GetBinCenter(ibin);
+        int shiftBin = h_org->FindBin(xVal-shiftVal);
+        if(shiftBin<1) continue;
+        double tempVal = h_org->GetBinContent(shiftBin);
+        double tempErr = h_org->GetBinError(shiftBin);
+        h_xshifted->SetBinContent(ibin,tempVal);
+        h_xshifted->SetBinError(ibin,tempErr);
+        if(ibin < 100) cout << "ibin = " << ibin << ", xVal = " << xVal << ", shiftBin = " << shiftBin << ", h_org_binVal = " << h_org->GetBinContent(ibin) << ", h_xshifted_val = " << tempVal << endl;
+    }
+    return h_xshifted;
+}
+
+double chi2(TH1* h1, TH1* h2, double rMin=-1, double rMax=-1){
+    double c = 0;
+    int ndof = 0;
+    double tempBinMin = 1;
+    double tempBinMax = h1->GetNbinsX()+1;
+
+    if(rMin!=-1) tempBinMin = h1->GetXaxis()->FindBin(rMin);
+    if(rMax!=-1) tempBinMax = h1->GetXaxis()->FindBin(rMax);
+    for(int i = tempBinMin; i < tempBinMax; ++i){
+        double y1 = h1->GetBinContent(i);
+        double y2 = h2->GetBinContent(i);
+        double e1 = h1->GetBinError(i);
+        double e2 = h2->GetBinError(i);
+
+        double dy = y1-y2;
+        double de2 = e1*e1+e2*e2;
+        if(de2 > 0) {
+            c += dy*dy/de2;
+            ndof += 1;
+        }
+    }
+
+    //return c;
+    return c/ndof;
+}
 
 void saveHistogramsToPicture(TH1* h, const char* fileType="pdf", const char* caption="", const char* directoryToBeSavedIn="figures", int styleIndex=0, int rebin =1){
     TCanvas* c1=new TCanvas();
@@ -235,6 +340,41 @@ double findCross(TH1* h1, TH1* h2, double& frac, double& effi, double& fracErr, 
 	effiErr = ( TMath::Sqrt(h1->Integral(1,crossVal)) / h1->Integral() ) * TMath::Sqrt(1 - (h1->Integral(1,crossVal)/h1->Integral()) );
 
 	return crossVal;
+}
+
+void ratioPanelCanvas(TCanvas*& canv,
+        const Float_t divRatio=0.4,
+        const Float_t leftOffset=0.,
+        const Float_t bottomOffset=0.,
+        const Float_t leftMargin=0.17,
+        const Float_t bottomMargin=0.3,
+        const Float_t edge=0.05) {
+    if (canv==0) {
+        //Error("makeMultiPanelCanvas","Got null canvas.");
+        return;
+    }
+    canv->Clear();
+
+
+    TPad* pad1 = new TPad("pad1","",0.0,divRatio,1.0,1.0);
+    canv->cd();
+    pad1->SetLeftMargin(leftMargin);
+    pad1->SetRightMargin(edge);
+    pad1->SetTopMargin(edge);
+    pad1->SetBottomMargin(edge);
+    pad1->Draw();
+    pad1->cd();
+    pad1->SetNumber(1);
+
+    TPad* pad2 = new TPad("pad2","",0.0,0.0,1.0,divRatio);
+    canv->cd();
+    pad2->SetLeftMargin(leftMargin);
+    pad2->SetRightMargin(edge);
+    pad2->SetTopMargin(edge);
+    pad2->SetBottomMargin(bottomMargin);
+    pad2->Draw();
+    pad2->cd();
+    pad2->SetNumber(2);
 }
 
 void makeMultiPanelCanvas(TCanvas*& canv, const Int_t columns,
