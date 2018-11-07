@@ -18,7 +18,54 @@ using namespace std;
 
 bool descend(float i,float j) { return (i>j); }
 
-void makeDataCentralityTable(int nbins = 200, const string label = "HFtowersPlusTrunc", const char * tag = "CentralityTable_HFtowersPlusTrunc200_Glauber_effHisto_run2v80x01_offline", bool useEffHisto = true, const char* fEff = "fileEff.root"){
+double dEffErrF(double* x, double* par) // Use "err"
+{
+  // Error function
+  
+  return 0.5*(1+TMath::Erf((x[0]-par[0])/(TMath::Sqrt(x[0])*par[1])));
+}
+
+double dEffErrFPW(double* x, double* par) // Use "errPW"
+{
+  // Piecewise function changing at par[0]
+  // Note that in this function par[2] and par[3] must be correlated in this way: par[3] = par[2]/par[0], to ensure the continuity
+  
+  if (x[0] <= par[0]) return 0.5*(1+TMath::Erf((x[0]-par[1])/par[2]));
+  else return 0.5*(1+TMath::Erf((x[0]-par[1])/(par[3]*x[0])));
+}
+
+double dEffStepF(double* x, double* par) // Use "step"
+{
+  // Step function changing to 1
+  // par[0] is the efficiency for x <= par[0]
+  
+  if (x[0] <= par[0]) return par[1];
+  else return 1.0;
+}
+
+TF1* fEffStepF = new TF1("hfEfficiency",dEffStepF,0.,5000.,2);
+TF1* fEffErrF = new TF1("hfEfficiency",dEffErrF,0.,5000.,2);
+TF1* fEffErrFPW = new TF1("hfEfficiency",dEffErrFPW,0.,5000.,3);
+
+const std::map< std::string , TF1* > effFfunc = {
+  {"step",fEffStepF},
+  {"err",fEffErrF},
+  {"errPW",fEffErrFPW}
+};
+
+const std::map< std::string , std::vector<double> > effFpars = {
+  {"step",{25.0,0.9476}},
+  {"err",{13.439,0.811}},
+  {"errPW",{11.36,13.5298,2.9839,0.2626}}
+};
+
+const std::map< std::string , std::string > effFstring = {
+  {"step","if (x <= par[0]) eff = par[1] ; else eff= 1.0"},
+  {"err","eff = 0.5*(1+TMath::Erf((x-par[0])/(TMath::Sqrt(x)*par[1])))"},
+  {"errPW","if (x <= par[0]) eff = 0.5*(1+TMath::Erf((x-par[1])/par[2])) ; else eff = 0.5*(1+TMath::Erf((x-par[1])/(par[3]*x)))"}
+};
+
+void makeDataCentralityTable(int nbins = 200, const string label = "HFtowersPlusTrunc", const char * tag = "CentralityTable_HFtowersPlusTrunc200_Glauber_effHisto_run2v80x01_offline", bool useEffHisto = true, const char* fEff = "fileEff.root", bool geomInfo = true){
   
   TH1D::SetDefaultSumw2();
   
@@ -67,6 +114,10 @@ void makeDataCentralityTable(int nbins = 200, const string label = "HFtowersPlus
   
   TFile *outFile = new TFile("CentralityTable_HFtowersPlusTrunc200_Glauber_effHisto_d20160904_v1.root","recreate");
   
+	ofstream txtfile("output_DataXeXe_effstep947a25_d20180412_v1.txt");
+	txtfile << "Input tree: " << inFileName << endl;
+	txtfile << "Tag name: " << tag << endl;
+
   TDirectory *dir = outFile->mkdir(tag);
   dir->cd();
   TNtuple * nt = new TNtuple("nt","","value");

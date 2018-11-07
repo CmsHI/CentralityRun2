@@ -25,10 +25,17 @@
 //////////////////////////////////////////////
 //////////////////////////////////////////////
 
-void ebDistributions(const char* inputFile = "inputFiles.txt",
+void ebDistributions(bool recreateDistributions = false,
+                     const char* sampleLabel = "DATA_EB",
+                     const char* inputFile = "ebInputFiles.txt",
                      const char* triggerName = "HLT_HINoBptxOR_v1"
                      )
 {
+  if (recreateDistributions)
+  {
+    cout << "[INFO] Creating distributions for " << sampleLabel  << endl;
+    mbDistributions(inputFile,triggerName,sampleLabel);
+  }
   
   // Read files and chain TTrees
   TChain* tree = readFiles(inputFile);
