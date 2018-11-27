@@ -1,0 +1,45 @@
+
+Basic histograms are made by MakeHists.C
+
+/////////////////////////////////////////////////////////////////////
+//Run by run data comparison{{{
+
+During the run several plots should be compared run by run.
+RunbyRunComp/RunbyRunComp.C draw comparions with some runs.
+To see more precisely ratio also compared in this code.
+This code uses output from MakeHists.C
+//}}}
+/////////////////////////////////////////////////////////////////////
+
+/////////////////////////////////////////////////////////////////////
+//MC data comparison{{{
+
+MC can not describe data perfectly. So they should be scaled by data.
+To see what kind of scale is needed to each variable Efficiency/FoldingMethod/Comp_Before_Scale.C draw comparison plot among data and MCs.
+
+Efficiency/FoldingMethod/GetScaleFactor.C compares data and MC to get scale factor. And store the scale factors as a text file.
+Efficiency/FoldingMethod/do_Scale.sh run the GetScaleFactor.C for each variable.
+In this file scale factor is changed several time and one scale factor giving lowest chi2 is choosen as final scale factor.
+
+Using the scale factors stored in the txt file Efficiency/FoldingMethod/ScaledMCeff.C calculate new MC efficiency.
+Efficiency/FoldingMethod/do_Eff.sh runs the ScaledMCeff.C.
+The coincidence filter applied to tower(HF energy). So all the tower energies should be scaled by HF scale factor and filtered by coincidence filter.
+The passed events are scaled by current variable's scale factor.
+The efficiency is selected(scaled)/total(scaled).
+
+Scaled MC distributions are compared with data by Efficiency/FoldingMethod/Comp_After_Scale.C
+
+With the scaled MC efficiency data efficiency is calculated.
+Data efficiency is data(selected)/data(selected and weighted by MC efficiency) 
+//}}}
+/////////////////////////////////////////////////////////////////////
+
+/////////////////////////////////////////////////////////////////////
+//{{{Coincidence filter determination
+
+To reject EM event from data we should know how much EM events rejected and collision events survived by filter.
+The coincidence filter is dedicated to EM rejection.
+If coincidence filter can remove EM events by combining with the other filters, need to see combined filter efficiency. Otherwise, only coincidence filter effect could be considered to select threshold and coincidence level.
+EMContamination/CoinRate.C scans the coincidence threshold and coincidence level.
+//}}}
+/////////////////////////////////////////////////////////////////////
