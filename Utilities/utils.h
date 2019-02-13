@@ -21,6 +21,7 @@
 #include <TTree.h>
 #include <TH1.h>
 #include <TStyle.h>
+#include <TEventList.h>
 #include "TROOT.h"
 #include "TChain.h"
 #include "TStopwatch.h"
@@ -219,7 +220,7 @@ void SetyjPadStyle(){
     gStyle->SetPadBottomMargin(0.17);
     gStyle->SetPadLeftMargin(0.17);
 }
-void SetHistTitleStyle(double titlesize=0.06, double labelsize = 0.05){
+void SetHistTitleStyle(double titlesize=0.05, double labelsize = 0.04){
     gStyle->SetTextFont(42); 
     gStyle->SetTextSize(0.04); 
     gStyle->SetLabelFont( 42, "X" ); 
@@ -238,11 +239,13 @@ void SetHistTitleStyle(double titlesize=0.06, double labelsize = 0.05){
   //  gStyle->SetLabelSize( labelsize, "X" ); gStyle->SetLabelOffset(labeloffset, "X");
    // gStyle->SetLabelSize( labelsize, "Y" ); gStyle->SetLabelOffset(labeloffset, "Y");
 //}
-void SetHistTitleStyle(TH1* h, double titlesize=0.08, double titleoffset=0.01, double labelsize=0.05,double labeloffset=0.01){
+void SetHistTitleStyle(TH1* h, double titlesize=0.055, double titleoffset=0.1, double labelsize=0.05,double labeloffset=0.01){
     h->SetTitleSize( titlesize, "X" ); h->SetTitleOffset(titleoffset, "X");
     h->SetTitleSize( titlesize, "Y" ); h->SetTitleOffset(titleoffset, "Y");
     h->SetLabelSize( labelsize, "X" ); h->SetLabelOffset(labeloffset, "X");
     h->SetLabelSize( labelsize, "Y" ); h->SetLabelOffset(labeloffset, "Y");
+    h->GetXaxis()->CenterTitle();
+    h->GetYaxis()->CenterTitle();
 }
 void thisPadStyle(){
     gPad->SetLeftMargin(0.17);
@@ -294,16 +297,28 @@ void hMarkerStyle(TH1 *h1=0, Int_t mstyle=20, Int_t mcolor=1, Double_t msize=1.0
 	h1->SetMarkerColor(mcolor);
 	h1->SetMarkerSize(msize);
 }
-void drawText(const char *text, float xp, float yp, int textColor=kBlack, int textSize=14){
-	TLatex *tex = new TLatex(xp,yp,text);
-	tex->SetTextFont(43);
-	//   if(bold)tex->SetTextFont(43);
-	tex->SetTextSize(textSize);
-	tex->SetTextColor(textColor);
-	tex->SetLineWidth(1);
-	tex->SetNDC();
-	tex->Draw();
+void drawText(const char *text, float xp, float yp, bool isRightAlign=0, int textColor=kBlack, double textSize=0.04, int textFont = 42){
+    TLatex *tex = new TLatex(xp,yp,text);
+    tex->SetTextFont(textFont);
+    //   if(bold)tex->SetTextFont(43);
+    tex->SetTextSize(textSize);
+    tex->SetTextColor(textColor);
+    tex->SetLineWidth(1);
+    tex->SetNDC();
+    if(isRightAlign) tex->SetTextAlign(31);
+    tex->Draw();
 }
+
+//void drawText(const char *text, float xp, float yp, int textColor=kBlack, int textSize=14){
+//	TLatex *tex = new TLatex(xp,yp,text);
+//	tex->SetTextFont(43);
+//	//   if(bold)tex->SetTextFont(43);
+//	tex->SetTextSize(textSize);
+//	tex->SetTextColor(textColor);
+//	tex->SetLineWidth(1);
+//	tex->SetNDC();
+//	tex->Draw();
+//}
 void jumSun(Double_t x1=0,Double_t y1=0,Double_t x2=1,Double_t y2=1,Int_t color=1, Double_t width=1)
 {
 	TLine* t1 = new TLine(x1,y1,x2,y2);
