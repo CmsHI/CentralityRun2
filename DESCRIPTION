@@ -17,9 +17,11 @@ This code uses output from MakeHists.C
 MC can not describe data perfectly. So they should be scaled by data.
 To see what kind of scale is needed to each variable Efficiency/FoldingMethod/Comp_Before_Scale.C draw comparison plot among data and MCs.
 
-Efficiency/FoldingMethod/GetScaleFactor.C compares data and MC to get scale factor. And store the scale factors as a text file.
-Efficiency/FoldingMethod/do_Scale.sh run the GetScaleFactor.C for each variable.
-In this file scale factor is changed several time and one scale factor giving lowest chi2 is choosen as final scale factor.
+By applying several scale factor chi2 is obtained. The one giving minimum chi2 is selected as final scale factor.
+The chi2 values are changed along the range of integration. Final scale factor also could be changed by integration range.
+Efficiency/FoldingMethod/CutScanForScaleFactor.C calculate final scale factors with different ranges. And the result scale factors are stored as txt file in the Efficiency/FoldingMethod/Scaled directory.
+Efficiency/FoldingMethod/CompScan.C draw the results.
+Efficiency/FoldingMethod/do_Scale.sh run the macro for each variable.
 
 Using the scale factors stored in the txt file Efficiency/FoldingMethod/ScaledMCeff.C calculate new MC efficiency.
 Efficiency/FoldingMethod/do_Eff.sh runs the ScaledMCeff.C.
@@ -31,6 +33,7 @@ Scaled MC distributions are compared with data by Efficiency/FoldingMethod/Comp_
 
 With the scaled MC efficiency data efficiency is calculated.
 Data efficiency is data(selected)/data(selected and weighted by MC efficiency) 
+Efficiency/FoldingMethod/foldEfftoData.C calculate data efficiency.
 //}}}
 /////////////////////////////////////////////////////////////////////
 
