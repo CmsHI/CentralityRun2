@@ -14,11 +14,11 @@
 #include <TParameter.h>
 //}}}
 
-void foldEfftoData(const Int_t ivar = 0, const Int_t Coin = 2, const Int_t Th = 4)
+void foldEfftoData(const Int_t ivar = 5, const Int_t Coin = 2, const Int_t Th = 4,  const Double_t RangeCut = 200)
 {
 	SetStyle();
-	TString akaM = "Hydjet_Cymbal5F";
-	TString akaD = "PR326617";
+	TString akaM = "EPOS";
+	TString akaD = "PR326478";
 
 //make directory{{{
 	string mainDIR = gSystem->ExpandPathName(gSystem->pwd());
@@ -29,25 +29,19 @@ void foldEfftoData(const Int_t ivar = 0, const Int_t Coin = 2, const Int_t Th = 
 //}}}
 
 //get tree{{{
-	TString filename1 = "/eos/cms/store/group/phys_heavyions/bdiab/PbPb2018/Forests/PromptRecoForests/HIMinimumBias0/v2/000/326/617/HiForest_326617_part1.root";
-	TString filename2 = "/eos/cms/store/group/phys_heavyions/bdiab/PbPb2018/Forests/PromptRecoForests/HIMinimumBias0/v2/000/326/617/HiForest_326617_part2.root";
-	TString filename3 = "/eos/cms/store/group/phys_heavyions/bdiab/PbPb2018/Forests/PromptRecoForests/HIMinimumBias0/v2/000/326/617/HiForest_326617_part3.root";
+	const Int_t NOF = 1;//Number Of Files
+	TString filename1[NOF] = {"/eos/cms/store/group/phys_heavyions/bdiab/PbPb2018/Forests/PromptRecoForests/HIMinimumBias0/v5/run326478/181129_165457/0000/HiForestAOD_326478_part1.root"};
 	TChain* t_evt = new TChain("hiEvtAnalyzer/HiTree");
 	TChain* t_skim = new TChain("skimanalysis/HltTree");
 	TChain* t_hlt = new TChain("hltanalysis/HltTree");
 	TChain* t_trk = new TChain("ppTrack/trackTree");
-	t_evt->Add(Form("%s", filename1.Data()));
-	t_skim->Add(Form("%s", filename1.Data()));
-	t_hlt->Add(Form("%s", filename1.Data()));
-	t_trk->Add(Form("%s", filename1.Data()));
-	t_evt->Add(Form("%s", filename2.Data()));
-	t_skim->Add(Form("%s", filename2.Data()));
-	t_hlt->Add(Form("%s", filename2.Data()));
-	t_trk->Add(Form("%s", filename2.Data()));
-	t_evt->Add(Form("%s", filename3.Data()));
-	t_skim->Add(Form("%s", filename3.Data()));
-	t_hlt->Add(Form("%s", filename3.Data()));
-	t_trk->Add(Form("%s", filename3.Data()));
+	for(Int_t ifile = 0; ifile < NOF; ifile++)
+	{
+		t_evt->Add(Form("%s", filename1[ifile].Data()));
+		t_skim->Add(Form("%s", filename1[ifile].Data()));
+		t_hlt->Add(Form("%s", filename1[ifile].Data()));
+		t_trk->Add(Form("%s", filename1[ifile].Data()));
+	}
 	t_evt->AddFriend(t_skim);
 	t_evt->AddFriend(t_hlt);
 	t_evt->AddFriend(t_trk);
@@ -129,12 +123,12 @@ void foldEfftoData(const Int_t ivar = 0, const Int_t Coin = 2, const Int_t Th = 
 //}}}
 
 //Get efficiency{{{
-	TFile* fEff = new TFile(Form("MCefficiency/MC_eff_2018_%s_coin%dth%d_%s_by_%s.root", VarName[ivar].Data(), Coin, Th, akaM.Data(), akaD.Data()), "READ");
+	TFile* fEff = new TFile(Form("../ScaleMC/MCefficiency/MC_eff_2018_%s_Range%d_coin%dth%d_%s_by_%s.root", VarName[ivar].Data(), (int)RangeCut, Coin, Th, akaM.Data(), akaD.Data()), "READ");
 	TEfficiency* effH = (TEfficiency*)(fEff->Get(Form("heff_%s_coin%dth%d", VarName[ivar].Data(), Coin, Th)));
 //}}}
 
-	//for(Long64_t jentry=0; jentry<nEntries;jentry++)
-	for(Long64_t jentry=0; jentry<100000;jentry++)
+	for(Long64_t jentry=0; jentry<nEntries;jentry++)
+	//for(Long64_t jentry=0; jentry<100000;jentry++)
 	{
 		t_evt->GetEntry(jentry);
 
@@ -179,7 +173,7 @@ void foldEfftoData(const Int_t ivar = 0, const Int_t Coin = 2, const Int_t Th = 
 //}}}
 	}
 
-	TFile* fout = new TFile(Form("DATAefficiency/Data_eff_2018_%s_coin%dth%d_%s_by_%s.root", VarName[ivar].Data(), Coin, Th, akaM.Data(), akaD.Data()), "RECREATE");
+	TFile* fout = new TFile(Form("DATAefficiency/Data_eff_2018_%s_Range%d_coin%dth%d_%s_by_%s.root", VarName[ivar].Data(), (int)RangeCut, Coin, Th, akaM.Data(), akaD.Data()), "RECREATE");
 
 	Double_t DeffVal = ((double) h1->Integral("width")/(double) h1W->Integral("width"));
 	cout << "The efficiency from " << VarName[ivar].Data() << " with PV is " << DeffVal << endl;
@@ -201,9 +195,9 @@ void foldEfftoData(const Int_t ivar = 0, const Int_t Coin = 2, const Int_t Th = 
 
 	TLatex *lt1 = new TLatex();
 	FormLatex(lt1, 12, 0.04);
-	lt1->DrawLatex(0.2, 0.5, Form("eff. = %0.3f", DeffVal));
+	lt1->DrawLatex(0.2, 0.5, Form("eff. = %0.3f %%", 100*DeffVal));
 	lt1->DrawLatex(0.2, 0.3, Form("%s eff. weights", akaM.Data()));
-	cdist1->SaveAs(Form("DATAefficiency/Data_dist_%s_PV_coin%d_th%d_%s_by_%s.pdf", VarName[ivar].Data(), Coin, Th, akaM.Data(), akaD.Data()));
+	cdist1->SaveAs(Form("DATAefficiency/Data_dist_%s_Range%d_PV_coin%d_th%d_%s_by_%s.pdf", VarName[ivar].Data(), (int)RangeCut, Coin, Th, akaM.Data(), akaD.Data()));
 //}}}
 
 	TCanvas* ceff1 = new TCanvas(Form("ceff1_%s", VarName[ivar].Data()), "", 0, 0, 600, 600);
@@ -212,7 +206,9 @@ void foldEfftoData(const Int_t ivar = 0, const Int_t Coin = 2, const Int_t Th = 
 	hratio1->Divide(hratio1, h1, 1, 1, "b");
 	hratio1->SetAxisRange(0, 1.2, "Y");
 	hratio1->Draw("pe");
-	ceff1->SaveAs(Form("DATAefficiency/Data_eff_2018_%s_PV_coin%dth%d_%s_by_%s.pdf", VarName[ivar].Data(), Coin, Th, akaM.Data(), akaD.Data()));
+	lt1->DrawLatex(0.2, 0.5, Form("eff. = %0.3f %%", 100*DeffVal));
+	lt1->DrawLatex(0.2, 0.3, Form("%s eff. weights", akaM.Data()));
+	ceff1->SaveAs(Form("DATAefficiency/Data_eff_2018_%s_Range%d_PV_coin%dth%d_%s_by_%s.pdf", VarName[ivar].Data(), (int)RangeCut, Coin, Th, akaM.Data(), akaD.Data()));
 
 	fout->cd();
 	h1->Write();
