@@ -15,11 +15,11 @@
 #include <TParameter.h>
 //}}}
 
-void ScaledMCeff(const Int_t ivar = 8, const Int_t Coin = 2, const Int_t Th = 4)
+void ScaledMCeff(const Int_t ivar = 5, const Int_t Coin = 2, const Int_t Th = 4, const Double_t RangeCut = 200)
 {
 	SetStyle();
-	TString akaD = "PR326617";
-	TString akaM = "Hydjet_Cymbal5F";
+	TString akaD = "PR326478";
+	TString akaM = "EPOS";
 
 //make directory{{{
 	string mainDIR = gSystem->ExpandPathName(gSystem->pwd());
@@ -29,10 +29,10 @@ void ScaledMCeff(const Int_t ivar = 8, const Int_t Coin = 2, const Int_t Th = 4)
 	else gSystem->mkdir(saveDIR.c_str(), kTRUE);
 //}}}
 
-	TString filename = "/eos/cms/store/group/phys_heavyions/dileptons/hanseul/HiForestAOD_HydjetCymbal5F_PbPb_MC_5TeV_CMSSW10_3_1_event_71000.root";//Hydjet Cymbal5F
-	//TString filename = "/eos/cms/store/group/phys_heavyions/dileptons/hanseul/HiForest_AMPT_PbPb_5020GeV_stringMelting_v10.root";//AMPT String
-	//TString filename = "/afs/cern.ch/work/h/hckim/public/Run2018/CentMC_HiForest/add_AMPT_nostringmelting_HiForestAOD_v10KNU.root";//AMPT NoString
-	//TString filename = "/eos/cms/store/group/phys_heavyions/ygo/PbPb2018/MC/EPOS/EposLHC_PbPb_5TeV_v10_1031.root";//EPOS
+	//TString filename = "/eos/cms/store/group/phys_heavyions/dileptons/hanseul/FOREST/HydjetCymbal5F_Forest/HYDJET_CYMBAL5F_PbPb_5020GeV/HydjetCymbal5F_5020GeV_PbPb_Forest/181128_165108/HydjetCymbal5F_5020GeV_PbPb_Forest.root";//Hydjet Cymbal5F
+	//TString filename = "/eos/cms/store/group/phys_heavyions/dileptons/hanseul/FOREST/AMPT_StringMelting_Forest/AMPT_StringMelting_Forest.root";//AMPT String Melting
+	//TString filename = "/eos/cms/store/group/phys_heavyions/dileptons/hanseul/FOREST/AMPT_noStringMelting_Forest/AMPT_No_StringMelting_Forest.root";//AMPT No String Melting
+	TString filename = "/eos/cms/store/group/phys_heavyions/dileptons/hanseul/FOREST/EPOS_Forest/EPOS_Forest.root";//EPOS
 
 //get tree{{{
 	TChain* t_evt = new TChain("hiEvtAnalyzer/HiTree");
@@ -117,6 +117,7 @@ void ScaledMCeff(const Int_t ivar = 8, const Int_t Coin = 2, const Int_t Th = 4)
 //Get scale factor{{{
 	Double_t towSF = 1.;//scale factor for tower energy
 	Double_t SF = 1.;//scale factor for variable
+/*
 	ifstream in1;
 	in1.open(Form("Scaled/ScaleFactor_HF_%s_by_%s.txt", akaM.Data(), akaD.Data()));
 	if(in1.is_open())
@@ -129,8 +130,9 @@ void ScaledMCeff(const Int_t ivar = 8, const Int_t Coin = 2, const Int_t Th = 4)
 		return;
 	}
 	in1.close();
+*/
 	ifstream in2;
-	in2.open(Form("Scaled/ScaleFactor_%s_%s_by_%s.txt", VarName[ivar].Data(), akaM.Data(), akaD.Data()));
+	in2.open(Form("Scaled/ScaleFactor_%s_Range%d_%s_by_%s.txt", VarName[ivar].Data(), (int) RangeCut, akaM.Data(), akaD.Data()));
 	if(in2.is_open())
 	{
 		in2 >> SF;
@@ -144,7 +146,8 @@ void ScaledMCeff(const Int_t ivar = 8, const Int_t Coin = 2, const Int_t Th = 4)
 //}}}
 
 	Long64_t nEntries = t_evt->GetEntries();
-	//nEntries = 500000;
+	//t_evt->IncrementTotalBuffers(1937220430);
+	//nEntries = 40000;
 	//nEntries = 1000;
 	for(Long64_t jentry=0; jentry<nEntries;jentry++)
 	{
@@ -188,6 +191,9 @@ void ScaledMCeff(const Int_t ivar = 8, const Int_t Coin = 2, const Int_t Th = 4)
 //}}}
 	}
 
+	TH1D* heff = (TH1D*) hsel->Clone(Form("heff_%s", VarName[ivar].Data()));
+	heff->Divide(heff, htot, 1, 1, "b");
+
 	TParameter<double>* effVal = new TParameter<double>(Form("v_eff_%s", VarName[ivar].Data()), ((double) hsel->Integral("width")/(double) htot->Integral("width")));
 	TEfficiency* effH = new TEfficiency(*hsel, *htot);
 	effH->SetName(Form("heff_%s_coin%dth%d", VarName[ivar].Data(), Coin, Th));
@@ -203,13 +209,14 @@ void ScaledMCeff(const Int_t ivar = 8, const Int_t Coin = 2, const Int_t Th = 4)
 	htmp->Draw();
 	geff->Draw("same");
 	SetLine(1, 0, 1, VarMaxC[ivar], 1, 0, 2);
-	lt1->DrawLatex(0.5, 0.6, Form("eff. = %.3f", effVal->GetVal()));
+	lt1->DrawLatex(0.5, 0.6, Form("eff. = %.3f %%", 100*effVal->GetVal()));
 	lt1->DrawLatex(0.5, 0.5, Form("%s", akaM.Data()));
-	c1->SaveAs(Form("MCefficiency/eff_dist_%s_coin%dth%d_%s_by_%s.pdf", VarName[ivar].Data(), Coin, Th, akaM.Data(), akaD.Data()));
+	c1->SaveAs(Form("MCefficiency/eff_dist_%s_Range%d_coin%dth%d_%s_by_%s.pdf", VarName[ivar].Data(), (int)RangeCut, Coin, Th, akaM.Data(), akaD.Data()));
 
-	TFile* fout = new TFile(Form("MCefficiency/MC_eff_2018_%s_coin%dth%d_%s_by_%s.root", VarName[ivar].Data(), Coin, Th, akaM.Data(), akaD.Data()), "RECREATE");
+	TFile* fout = new TFile(Form("MCefficiency/MC_eff_2018_%s_Range%d_coin%dth%d_%s_by_%s.root", VarName[ivar].Data(), (int)RangeCut, Coin, Th, akaM.Data(), akaD.Data()), "RECREATE");
 	fout->cd();
 	hsel->Write();
+	heff->Write();
 	effVal->Write();
 	effH->Write();
 	geff->Write();

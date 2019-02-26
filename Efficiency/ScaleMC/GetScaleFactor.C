@@ -88,7 +88,7 @@ Double_t Getchi2(TH1D* href, TH1D* hcomp, Double_t xmin = -1, Double_t xmax = -1
 }
 //}}}
 
-void GetScaleFactor(const Int_t ivar = 9)
+void GetScaleFactor(const Int_t ivar = 5)
 {
 	SetStyle();
 
@@ -100,13 +100,13 @@ void GetScaleFactor(const Int_t ivar = 9)
 	else gSystem->mkdir(saveDIR.c_str(), kTRUE);
 //}}}
 
-	TString akaD = "PR326617";
+	TString akaD = "PR326478";
 	TString akaM = "EPOS";
-	TFile* fdata = new TFile(Form("../../HistFiles/PbPb2018_%s_histo.root", akaD.Data()), "READ");
-	//TString fMC = "/eos/cms/store/group/phys_heavyions/dileptons/hanseul/HiForestAOD_HydjetCymbal5F_PbPb_MC_5TeV_CMSSW10_3_1_event_71000.root";//Hydjet Cymbal5F
-	//TString fMC = "/eos/cms/store/group/phys_heavyions/dileptons/hanseul/HiForest_AMPT_PbPb_5020GeV_stringMelting_v10.root";//AMPT String Melting
-	//TString fMC = "/afs/cern.ch/work/h/hckim/public/Run2018/CentMC_HiForest/add_AMPT_nostringmelting_HiForestAOD_v10KNU.root";//AMPT No String Melting
-	TString fMC = "/eos/cms/store/group/phys_heavyions/ygo/PbPb2018/MC/EPOS/EposLHC_PbPb_5TeV_v10_1031.root";//EPOS
+	TFile* fdata = new TFile(Form("../../HistFiles/PbPb2018_%s_histo_newCNT.root", akaD.Data()), "READ");
+	//TString fMC = "/eos/cms/store/group/phys_heavyions/dileptons/hanseul/FOREST/HydjetCymbal5F_Forest/HYDJET_CYMBAL5F_PbPb_5020GeV/HydjetCymbal5F_5020GeV_PbPb_Forest/181128_165108/HydjetCymbal5F_5020GeV_PbPb_Forest.root";//Hydjet Cymbal5F
+	//TString fMC = "/eos/cms/store/group/phys_heavyions/dileptons/hanseul/FOREST/AMPT_StringMelting_Forest/AMPT_StringMelting_Forest.root";//AMPT String Melting
+	//TString fMC = "/eos/cms/store/group/phys_heavyions/dileptons/hanseul/FOREST/AMPT_noStringMelting_Forest/AMPT_No_StringMelting_Forest.root";//AMPT No String Melting
+	TString fMC = "/eos/cms/store/group/phys_heavyions/dileptons/hanseul/FOREST/HydjetCymbal5F_Forest/HYDJET_CYMBAL5F_PbPb_5020GeV_Forest.root";//EPOS
 
 //Get trees{{{
 	TChain* t_evt = new TChain("hiEvtAnalyzer/HiTree");
@@ -136,13 +136,14 @@ void GetScaleFactor(const Int_t ivar = 9)
 	Double_t variation = 0.6;
 	if(ivar == 9) ScaleMin = 1.5;
 	Int_t ibest = 0;
+	const Double_t RangeCut = 500;
 
 //scale iteration{{{
 	for(Int_t iiter = 0; iiter < Niter; iiter++)
 	{
 		ScaleX[iiter] = ScaleMin+(variation/Niter)*iiter;
 		hMC[iiter] = ScaleTH1(t_evt, iiter, ScaleX[iiter], ivar);
-		chi2val[iiter] = Getchi2(hMC[iiter], href, NormRangeCut[ivar]);
+		chi2val[iiter] = Getchi2(hMC[iiter], href, RangeCut);
 		g1->SetPoint(iiter, ScaleX[iiter], chi2val[iiter]);
 		if(chi2val[iiter] < chi2val[ibest]) ibest = iiter;
 	}
@@ -154,7 +155,7 @@ void GetScaleFactor(const Int_t ivar = 9)
 //}}}
 
 	FILE* ftxt;
-	ftxt = fopen(Form("Scaled/ScaleFactor_%s_%s_by_%s.txt", VarName[ivar].Data(), akaM.Data(), akaD.Data()), "w");
+	ftxt = fopen(Form("Scaled/ScaleFactor_%s_Range%d_%s_by_%s.txt", VarName[ivar].Data(), (int) RangeCut, akaM.Data(), akaD.Data()), "w");
 	fprintf(ftxt, "%f", ScaleX[ibest]);
 	fclose(ftxt);
 
