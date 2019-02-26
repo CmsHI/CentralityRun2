@@ -12,28 +12,36 @@ This code uses output from MakeHists.C
 /////////////////////////////////////////////////////////////////////
 
 /////////////////////////////////////////////////////////////////////
-//MC data comparison{{{
+//Efficiency calculation{{{
 
 MC can not describe data perfectly. So they should be scaled by data.
-To see what kind of scale is needed to each variable Efficiency/FoldingMethod/Comp_Before_Scale.C draw comparison plot among data and MCs.
+To see what kind of scale is needed to each variable Efficiency/ScaleMC/Comp_Before_Scale.C draw comparison plot among data and MCs.
 
-By applying several scale factor chi2 is obtained. The one giving minimum chi2 is selected as final scale factor.
-The chi2 values are changed along the range of integration. Final scale factor also could be changed by integration range.
-Efficiency/FoldingMethod/CutScanForScaleFactor.C calculate final scale factors with different ranges. And the result scale factors are stored as txt file in the Efficiency/FoldingMethod/Scaled directory.
-Efficiency/FoldingMethod/CompScan.C draw the results.
-Efficiency/FoldingMethod/do_Scale.sh run the macro for each variable.
+Also MC efficiencies for each MC before scale can be compared by Efficiency/ScaleMC/MCeffComp.C
 
-Using the scale factors stored in the txt file Efficiency/FoldingMethod/ScaledMCeff.C calculate new MC efficiency.
-Efficiency/FoldingMethod/do_Eff.sh runs the ScaledMCeff.C.
-The coincidence filter applied to tower(HF energy). So all the tower energies should be scaled by HF scale factor and filtered by coincidence filter.
+By applying several scale factor, chi2 is obtained. The one giving minimum chi2 is selected as final scale factor.
+The chi2 values are changed with respect to the range of integration. Final scale factor also could be changed by integration range.
+Efficiency/ScaleMC/CutScanForScaleFactor.C calculate final scale factors with different ranges. And the result scale factors are stored as txt file in the Efficiency/ScaleMC/Scaled directory.
+Efficiency/ScaleMC/CompScan.C draw and compare the chi2 distributions.
+With the selected range correspond scalefactor stored by Efficiency/ScaleMC/GetScaleFactor.C as txt file.
+
+Using the scale factors Efficiency/ScaleMC/ScaledMCeff.C scale MC and calculate new MC efficiency. Efficiency/ScaleMC/do_Eff.sh runs the macro.
+The coincidence filter used in event selection is applied to tower(HF energy). So all the tower energies should be scaled by HF scale factor and filtered by coincidence filter.
 The passed events are scaled by current variable's scale factor.
-The efficiency is selected(scaled)/total(scaled).
+The definition of efficiency is selected(scaled)/total(scaled).
 
-Scaled MC distributions are compared with data by Efficiency/FoldingMethod/Comp_After_Scale.C
+Scaled MC distributions are compared with data by Efficiency/ScaleMC/Comp_After_Scale.C
 
-With the scaled MC efficiency data efficiency is calculated.
-Data efficiency is data(selected)/data(selected and weighted by MC efficiency) 
+There are several ways to obtain efficiency. To be convinced with the result these methods are compared.
+
+Folding method is weighting data via MC.
+MC is pure events. So by weighting data, which is passed event selection, real events could be recovered.
+The definition of data efficiency is data(selected)/data(selected and weighted by MC efficiency) 
 Efficiency/FoldingMethod/foldEfftoData.C calculate data efficiency.
+
+Fitting method
+
+Tower method
 //}}}
 /////////////////////////////////////////////////////////////////////
 
