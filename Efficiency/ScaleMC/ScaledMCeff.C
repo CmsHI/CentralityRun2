@@ -15,11 +15,9 @@
 #include <TParameter.h>
 //}}}
 
-void ScaledMCeff(const Int_t ivar = 5, const Int_t Coin = 2, const Int_t Th = 4, const Double_t RangeCut = 200)
+void ScaledMCeff(const Int_t ivar = 5, const Int_t Coin = 2, const Int_t Th = 4, const Int_t MCN = 0, const Int_t RangeN = 0)
 {
 	SetStyle();
-	TString akaD = "PR326478";
-	TString akaM = "EPOS";
 
 //make directory{{{
 	string mainDIR = gSystem->ExpandPathName(gSystem->pwd());
@@ -29,10 +27,37 @@ void ScaledMCeff(const Int_t ivar = 5, const Int_t Coin = 2, const Int_t Th = 4,
 	else gSystem->mkdir(saveDIR.c_str(), kTRUE);
 //}}}
 
-	//TString filename = "/eos/cms/store/group/phys_heavyions/dileptons/hanseul/FOREST/HydjetCymbal5F_Forest/HYDJET_CYMBAL5F_PbPb_5020GeV/HydjetCymbal5F_5020GeV_PbPb_Forest/181128_165108/HydjetCymbal5F_5020GeV_PbPb_Forest.root";//Hydjet Cymbal5F
-	//TString filename = "/eos/cms/store/group/phys_heavyions/dileptons/hanseul/FOREST/AMPT_StringMelting_Forest/AMPT_StringMelting_Forest.root";//AMPT String Melting
-	//TString filename = "/eos/cms/store/group/phys_heavyions/dileptons/hanseul/FOREST/AMPT_noStringMelting_Forest/AMPT_No_StringMelting_Forest.root";//AMPT No String Melting
-	TString filename = "/eos/cms/store/group/phys_heavyions/dileptons/hanseul/FOREST/EPOS_Forest/EPOS_Forest.root";//EPOS
+	TString akaD = "PR326483";
+	TString akaM;
+
+//Set Names{{{
+	TString fMC;
+	if(MCN == 0)
+	{
+		fMC = "/eos/cms/store/group/phys_heavyions/dileptons/hanseul/FOREST/HydjetCymbal5F_Forest/HYDJET_CYMBAL5F_PbPb_5020GeV/HydjetCymbal5F_5020GeV_PbPb_Forest/181128_165108/HydjetCymbal5F_5020GeV_PbPb_Forest.root";
+		akaM = "Hydjet_Cymbal5F";
+	}
+	else if(MCN == 1)
+	{
+		fMC = "/eos/cms/store/group/phys_heavyions/dileptons/hanseul/FOREST/AMPT_StringMelting_Forest/AMPT_StringMelting_Forest.root";
+		akaM = "AMPT_String";
+	}
+	else if(MCN == 2)
+	{
+		fMC = "/eos/cms/store/group/phys_heavyions/dileptons/hanseul/FOREST/AMPT_noStringMelting_Forest/AMPT_No_StringMelting_Forest.root";
+		akaM = "AMPT_NoString";
+	}
+	else if(MCN == 3)
+	{
+		fMC = "/eos/cms/store/group/phys_heavyions/dileptons/hanseul/FOREST/EPOS_Forest/EPOS_Forest.root";
+		akaM = "EPOS";
+	}
+	else
+	{
+		cout << "Out of MC sample" << endl;
+		return;
+	}
+//}}}
 
 //get tree{{{
 	TChain* t_evt = new TChain("hiEvtAnalyzer/HiTree");
@@ -40,11 +65,11 @@ void ScaledMCeff(const Int_t ivar = 5, const Int_t Coin = 2, const Int_t Th = 4,
 	TChain* t_hlt = new TChain("hltanalysis/HltTree");
 	TChain* t_trk = new TChain("ppTrack/trackTree");
 	TChain* t_rec = new TChain("rechitanalyzerpp/tower");
-	t_evt->Add(Form("%s", filename.Data()));
-	t_skim->Add(Form("%s", filename.Data()));
-	t_hlt->Add(Form("%s", filename.Data()));
-	t_trk->Add(Form("%s", filename.Data()));
-	t_rec->Add(Form("%s", filename.Data()));
+	t_evt->Add(Form("%s", fMC.Data()));
+	t_skim->Add(Form("%s", fMC.Data()));
+	t_hlt->Add(Form("%s", fMC.Data()));
+	t_trk->Add(Form("%s", fMC.Data()));
+	t_rec->Add(Form("%s", fMC.Data()));
 	t_evt->AddFriend(t_skim);
 	t_evt->AddFriend(t_hlt);
 	t_evt->AddFriend(t_trk);
@@ -115,38 +140,48 @@ void ScaledMCeff(const Int_t ivar = 5, const Int_t Coin = 2, const Int_t Th = 4,
 //}}}
 
 //Get scale factor{{{
-	Double_t towSF = 1.;//scale factor for tower energy
-	Double_t SF = 1.;//scale factor for variable
-/*
+	const Int_t NOC = 6;//Number Of Cut
+	const Int_t RangeCut[NOC] = {80, 100, 200, 300, 500, 1000};
+	TString word1[NOC];
+	Double_t towSF[NOC] = {1., 1., 1., 1., 1., 1.};
+	Double_t chi2val1[NOC];
+	TString word2[NOC];
+	Double_t SF[NOC] = {1., 1., 1., 1., 1., 1.};
+	Double_t chi2val2[NOC];
 	ifstream in1;
-	in1.open(Form("Scaled/ScaleFactor_HF_%s_by_%s.txt", akaM.Data(), akaD.Data()));
+	in1.open(Form("Scaled/ScaleFactor_scan_HF_%s_%s.txt", akaD.Data(), akaM.Data()));
 	if(in1.is_open())
 	{
-		in1 >> towSF;
+		for(Int_t icut = 0; icut < NOC; icut++)
+		{
+			in1 >> word1[icut] >> towSF[icut] >> chi2val1[icut];
+		}
 	}
 	else
 	{
-		cout << "There is No such file!!! Please confirm the name!!!" << endl;
+		cout << "File1: There is No such file!!! Please confirm the name!!!" << endl;
 		return;
 	}
 	in1.close();
-*/
+
 	ifstream in2;
-	in2.open(Form("Scaled/ScaleFactor_%s_Range%d_%s_by_%s.txt", VarName[ivar].Data(), (int) RangeCut, akaM.Data(), akaD.Data()));
+	in2.open(Form("Scaled/ScaleFactor_scan_%s_%s_%s.txt", VarName[ivar].Data(), akaD.Data(), akaM.Data()));
 	if(in2.is_open())
 	{
-		in2 >> SF;
+		for(Int_t icut = 0; icut < NOC; icut++)
+		{
+			in2 >> word2[icut] >> SF[icut] >> chi2val2[icut];
+		}
 	}
 	else
 	{
-		cout << "There is No such file!!! Please confirm the name!!!" << endl;
+		cout << "File2: There is No such file!!! Please confirm the name!!!" << endl;
 		return;
 	}
 	in2.close();
 //}}}
 
 	Long64_t nEntries = t_evt->GetEntries();
-	//t_evt->IncrementTotalBuffers(1937220430);
 	//nEntries = 40000;
 	//nEntries = 1000;
 	for(Long64_t jentry=0; jentry<nEntries;jentry++)
@@ -173,7 +208,7 @@ void ScaledMCeff(const Int_t ivar = 5, const Int_t Coin = 2, const Int_t Th = 4,
 //}}}
 
 //Fill histogram{{{
-		htot->Fill(SF*currVar);
+		htot->Fill(SF[RangeN]*currVar);
 
 		if(!pprimaryVertexFilter) continue;
 		if(!pclusterCompatibilityFilter) continue;
@@ -183,11 +218,11 @@ void ScaledMCeff(const Int_t ivar = 5, const Int_t Coin = 2, const Int_t Th = 4,
 		for(Int_t in = 0; in < n; in++)
 		{
 			if(abs(eta[in]) < 3.0 || abs(eta[in]) > 6.0) continue;
-			if(eta[in] >= 3.0 && eta[in] <= 6.0 && towSF*e[in] >= Th) nplus++;
-			if(eta[in] <= -3.0 && eta[in] >= -6.0 && towSF*e[in] >= Th) nminus++;
+			if(eta[in] >= 3.0 && eta[in] <= 6.0 && towSF[RangeN]*e[in] >= Th) nplus++;
+			if(eta[in] <= -3.0 && eta[in] >= -6.0 && towSF[RangeN]*e[in] >= Th) nminus++;
 		}
 		if(nplus < Coin && nminus < Coin) continue;
-		hsel->Fill(SF*currVar);
+		hsel->Fill(SF[RangeN]*currVar);
 //}}}
 	}
 
@@ -211,9 +246,9 @@ void ScaledMCeff(const Int_t ivar = 5, const Int_t Coin = 2, const Int_t Th = 4,
 	SetLine(1, 0, 1, VarMaxC[ivar], 1, 0, 2);
 	lt1->DrawLatex(0.5, 0.6, Form("eff. = %.3f %%", 100*effVal->GetVal()));
 	lt1->DrawLatex(0.5, 0.5, Form("%s", akaM.Data()));
-	c1->SaveAs(Form("MCefficiency/eff_dist_%s_Range%d_coin%dth%d_%s_by_%s.pdf", VarName[ivar].Data(), (int)RangeCut, Coin, Th, akaM.Data(), akaD.Data()));
+	c1->SaveAs(Form("MCefficiency/eff_dist_%s_Range%d_coin%dth%d_%s_by_%s.pdf", VarName[ivar].Data(), RangeCut[RangeN], Coin, Th, akaM.Data(), akaD.Data()));
 
-	TFile* fout = new TFile(Form("MCefficiency/MC_eff_2018_%s_Range%d_coin%dth%d_%s_by_%s.root", VarName[ivar].Data(), (int)RangeCut, Coin, Th, akaM.Data(), akaD.Data()), "RECREATE");
+	TFile* fout = new TFile(Form("MCefficiency/MC_eff_2018_%s_Range%d_coin%dth%d_%s_by_%s.root", VarName[ivar].Data(), RangeCut[RangeN], Coin, Th, akaM.Data(), akaD.Data()), "RECREATE");
 	fout->cd();
 	hsel->Write();
 	heff->Write();

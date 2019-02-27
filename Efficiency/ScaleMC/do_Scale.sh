@@ -1,9 +1,17 @@
 #!/bin/bash
+#ScaledMCeff.C(Int_t ivar, Int_t Coin, Int_t Th, Int_t MCN, Int_t RangeN)
 
-#for((i=0; i<13; i++))
-#do
-#	root -l -b -q 'GetScaleFactor.C+('$i')'
-#done
-
-root -l -b -q 'GetScaleFactor.C+(0)'
-root -l -b -q 'GetScaleFactor.C+(5)'
+root -l -b -q 'ScaledMCeff.C+(0, 2, 4, 0, 3)'
+root -l -b -q 'ScaledMCeff.C+(0, 2, 4, 0, 4)'
+root -l -b -q 'ScaledMCeff.C+(0, 2, 4, 1, 2)'
+root -l -b -q 'ScaledMCeff.C+(0, 2, 4, 1, 4)'
+root -l -b -q 'ScaledMCeff.C+(0, 2, 4, 2, 4)'
+root -l -b -q 'ScaledMCeff.C+(0, 2, 4, 2, 5)'
+root -l -b -q 'ScaledMCeff.C+(0, 2, 4, 3, 2)'
+root -l -b -q 'ScaledMCeff.C+(5, 2, 4, 0, 3)'
+root -l -b -q 'ScaledMCeff.C+(5, 2, 4, 0, 4)'
+root -l -b -q 'ScaledMCeff.C+(5, 2, 4, 1, 2)'
+root -l -b -q 'ScaledMCeff.C+(5, 2, 4, 1, 4)'
+root -l -b -q 'ScaledMCeff.C+(5, 2, 4, 2, 4)'
+root -l -b -q 'ScaledMCeff.C+(5, 2, 4, 2, 5)'
+root -l -b -q 'ScaledMCeff.C+(5, 2, 4, 3, 2)'
