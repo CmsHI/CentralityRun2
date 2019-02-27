@@ -89,7 +89,7 @@ Double_t Getchi2(TH1D* href, TH1D* hcomp, Double_t xmin = -1, Double_t xmax = -1
 }
 //}}}
 
-void CutScanForScaleFactor()
+void CutScanForScaleFactor(const Int_t ivar = 5, const Int_t MCN = 3)
 {
 	SetStyle();
 
@@ -101,16 +101,42 @@ void CutScanForScaleFactor()
 	else gSystem->mkdir(saveDIR.c_str(), kTRUE);
 //}}}
 
-	const Int_t ivar = 5;//0: HF, 5: HFECut
-	TString akaD = "PR326478";
-	TString akaM = "EPOS";
+	TString akaD = "PR326483";
+	TString akaM;
+
+//Set Names{{{
 	TFile* fdata = new TFile(Form("../../HistFiles/PbPb2018_%s_histo_newCNT.root", akaD.Data()), "READ");
-	//TString fMC = "/eos/cms/store/group/phys_heavyions/dileptons/hanseul/FOREST/HydjetCymbal5F_Forest/HYDJET_CYMBAL5F_PbPb_5020GeV/HydjetCymbal5F_5020GeV_PbPb_Forest/181128_165108/HydjetCymbal5F_5020GeV_PbPb_Forest.root";//Hydjet Cymbal5F
-	//TString fMC = "/eos/cms/store/group/phys_heavyions/dileptons/hanseul/FOREST/AMPT_StringMelting_Forest/AMPT_StringMelting_Forest.root";//AMPT String Melting
-	//TString fMC = "/eos/cms/store/group/phys_heavyions/dileptons/hanseul/FOREST/AMPT_noStringMelting_Forest/AMPT_No_StringMelting_Forest.root";//AMPT No String Melting
-	TString fMC = "/eos/cms/store/group/phys_heavyions/dileptons/hanseul/FOREST/EPOS_Forest/EPOS_Forest.root";//EPOS
+	TString fMC;
+	if(MCN == 0)
+	{
+		fMC = "/eos/cms/store/group/phys_heavyions/dileptons/hanseul/FOREST/HydjetCymbal5F_Forest/HYDJET_CYMBAL5F_PbPb_5020GeV/HydjetCymbal5F_5020GeV_PbPb_Forest/181128_165108/HydjetCymbal5F_5020GeV_PbPb_Forest.root";
+		akaM = "Hydjet_Cymbal5F";
+	}
+	else if(MCN == 1)
+	{
+		fMC = "/eos/cms/store/group/phys_heavyions/dileptons/hanseul/FOREST/AMPT_StringMelting_Forest/AMPT_StringMelting_Forest.root";
+		akaM = "AMPT_String";
+	}
+	else if(MCN == 2)
+	{
+		fMC = "/eos/cms/store/group/phys_heavyions/dileptons/hanseul/FOREST/AMPT_noStringMelting_Forest/AMPT_No_StringMelting_Forest.root";
+		akaM = "AMPT_NoString";
+	}
+	else if(MCN == 3)
+	{
+		fMC = "/eos/cms/store/group/phys_heavyions/dileptons/hanseul/FOREST/EPOS_Forest/EPOS_Forest.root";
+		akaM = "EPOS";
+	}
+	else
+	{
+		cout << "Out of MC sample" << endl;
+		return;
+	}
+//}}}
+
 	Int_t rebin = 1;
-	if(akaM == "AMPT_String" || akaM == "AMPT_NoString") rebin = 15;
+	if(MCN == 1 || MCN == 2) rebin = 15;
+	else if(MCN == 3) rebin = 5;
 
 //Get trees{{{
 	TChain* t_evt = new TChain("hiEvtAnalyzer/HiTree");
@@ -130,8 +156,8 @@ void CutScanForScaleFactor()
 	Double_t RangeCut[NOC] = {80, 100, 200, 300, 500, 1000};
 	const Int_t Niter = 60;
 	FILE* ftxt;
-	ftxt = fopen(Form("Scaled/ScaleFactor_sel_%s_%s_%s.txt", VarName[ivar].Data(), akaD.Data(), akaM.Data()), "w");
-	TFile* fout = new TFile(Form("Scaled/Scaled_MC_eff_sel_%s_%s_%s.root", VarName[ivar].Data(), akaD.Data(), akaM.Data()), "RECREATE");
+	ftxt = fopen(Form("Scaled/ScaleFactor_scan_%s_%s_%s.txt", VarName[ivar].Data(), akaD.Data(), akaM.Data()), "w");
+	TFile* fout = new TFile(Form("Scaled/Scaled_MC_eff_scan_%s_%s_%s.root", VarName[ivar].Data(), akaD.Data(), akaM.Data()), "RECREATE");
 	fout->cd();
 
 	for(Int_t icut = 0; icut < NOC; icut++)
@@ -167,7 +193,7 @@ void CutScanForScaleFactor()
 		}
 //}}}
 
-		fprintf(ftxt, "%d: %f \n", (int)RangeCut[icut], ScaleX[ibest]);
+		fprintf(ftxt, "%d: %f \t %f \n", (int)RangeCut[icut], ScaleX[ibest], chi2val[ibest]);
 
 //Draw comp{{{
 		TCanvas* c1 = new TCanvas("c1", "", 0, 0, 600, 600);
@@ -176,7 +202,7 @@ void CutScanForScaleFactor()
 		FormTH1(href, 0);
 		href->Draw("hist");
 		hMC[ibest]->Draw("samepe");
-		c1->SaveAs(Form("Scaled/Scaled_MC_Data_Comp_sel_%s_cut%d_%s_%s.pdf", VarName[ivar].Data(), (int)RangeCut[icut], akaD.Data(), akaM.Data()));
+		c1->SaveAs(Form("Scaled/Scaled_MC_Data_Comp_scan_%s_cut%d_%s_%s.pdf", VarName[ivar].Data(), (int)RangeCut[icut], akaD.Data(), akaM.Data()));
 //}}}
 
 //Draw chi2{{{
@@ -187,7 +213,7 @@ void CutScanForScaleFactor()
 		g1->GetYaxis()->CenterTitle();
 		g1->SetMarkerStyle(20);
 		g1->Draw("ap");
-		c2->SaveAs(Form("Scaled/Scale_factor_chi2_scan_sel_%s_cut%d_%s_%s.pdf", VarName[ivar].Data(), (int)RangeCut[icut], akaD.Data(), akaM.Data()));
+		c2->SaveAs(Form("Scaled/Scale_factor_chi2_scan_%s_cut%d_%s_%s.pdf", VarName[ivar].Data(), (int)RangeCut[icut], akaD.Data(), akaM.Data()));
 //}}}
 
 //Draw ratio{{{
@@ -198,7 +224,7 @@ void CutScanForScaleFactor()
 		hratio->Divide(href);
 		hratio->Draw("pe");
 		SetLine(1, 0, 1, VarMaxC[0], 1, 0, 2);
-		c3->SaveAs(Form("Scaled/Scaled_ratio_sel_%s_cut%d_%s_%s.pdf", VarName[ivar].Data(), (int)RangeCut[icut], akaD.Data(), akaM.Data()));
+		c3->SaveAs(Form("Scaled/Scaled_ratio_scan_%s_cut%d_%s_%s.pdf", VarName[ivar].Data(), (int)RangeCut[icut], akaD.Data(), akaM.Data()));
 //}}}
 
 //Save plots{{{
