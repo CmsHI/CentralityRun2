@@ -15,7 +15,7 @@
 #include <TParameter.h>
 //}}}
 
-void ScaledMCeff(const Int_t ivar = 5, const Int_t Coin = 2, const Int_t Th = 4, const Int_t MCN = 0, const Int_t RangeN = 0)
+void ScaledMCeff(const Int_t ivar = 5, const Int_t Coin = 2, const Int_t Th = 4, const Int_t MCN = 0, const Int_t HFRange = 0, const Int_t RangeN = 0)
 {
 	SetStyle();
 
@@ -218,8 +218,8 @@ void ScaledMCeff(const Int_t ivar = 5, const Int_t Coin = 2, const Int_t Th = 4,
 		for(Int_t in = 0; in < n; in++)
 		{
 			if(abs(eta[in]) < 3.0 || abs(eta[in]) > 6.0) continue;
-			if(eta[in] >= 3.0 && eta[in] <= 6.0 && towSF[RangeN]*e[in] >= Th) nplus++;
-			if(eta[in] <= -3.0 && eta[in] >= -6.0 && towSF[RangeN]*e[in] >= Th) nminus++;
+			if(eta[in] >= 3.0 && eta[in] <= 6.0 && towSF[HFRange]*e[in] >= Th) nplus++;
+			if(eta[in] <= -3.0 && eta[in] >= -6.0 && towSF[HFRange]*e[in] >= Th) nminus++;
 		}
 		if(nplus < Coin && nminus < Coin) continue;
 		hsel->Fill(SF[RangeN]*currVar);
@@ -250,6 +250,7 @@ void ScaledMCeff(const Int_t ivar = 5, const Int_t Coin = 2, const Int_t Th = 4,
 
 	TFile* fout = new TFile(Form("MCefficiency/MC_eff_2018_%s_Range%d_coin%dth%d_%s_by_%s.root", VarName[ivar].Data(), RangeCut[RangeN], Coin, Th, akaM.Data(), akaD.Data()), "RECREATE");
 	fout->cd();
+	htot->Write();
 	hsel->Write();
 	heff->Write();
 	effVal->Write();
