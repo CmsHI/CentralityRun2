@@ -16,19 +16,49 @@ TString VarName[NVar] = {"HF", "HFplus", "HFplusEta4", "HFminus",
 								"HFECutminus", "EB", "EE", "Ntracks", "HFhit",
 								"Npix"};
 //number of bins and max value of variable for collision events
-const Int_t nBinC[NVar] = {600, 300, 150, 300, 150, 600, 300, 300, 300,
-									300, 400, 3600, 1000};
+const Double_t BinBoundary[NVar] = {500, 150, 100, 150, 100, 500, 150, 150,
+												300, 300, 300, 18000, 8000};
+const Int_t nBinC[NVar] = {12000, 300, 150, 300, 150, 12000, 300, 300, 300,
+									300, 400, 3600, 1000};//Number of bins collision
 const Double_t VarMaxC[NVar] = {6000, 3000, 1500, 3000, 1500, 6000, 3000,
 										3000, 3000, 3000, 4000, 180000, 100000};
-const Double_t NormRangeCut[NVar] = {500, 150, 100, 150, 100, 500, 150, 150,
-												300, 300, 300, 18000, 8000};
-const Double_t VarW[NVar] = {4, 2, 2, 2, 2, 4, 2, 2, 2, 2, 4, 5, 10};
+										//Maximum value of variable for Collision
+const Double_t VarMaxZ[NVar] = {200, 150, 100, 150, 100, 200, 150, 150,
+										300, 300, 300, 8000, 4000};
+										//Zoom in maximum of variable
+const Double_t VarW[NVar] = {40, 2, 2, 2, 2, 40, 2, 2, 2, 2, 4, 5, 10};
+									//width of bin
+const Double_t NormRangeMin[NVar] = {1000, 500, 200, 500, 200, 1000, 500,
+												500, 200,300, 500, 20000, 10000};
+												//minimum of normaization range
+const Double_t NormRangeMax[NVar] = {3000, 1500, 600, 1500, 600, 3000,
+												1500, 1500, 600, 1000, 2000, 100000,
+												60000};
+												//maximum of normalization range
+const Int_t NOC = 6;//Number of chi2 range cut
+const Double_t Chi2Range[NVar][NOC] = {{50, 200, 500, 1000, 3000, 4000},
+													{25, 100, 250, 500, 1500, 2000},
+													{20, 70, 200, 400, 600, 800},
+													{25, 100, 250, 500, 1500, 2000},
+													{20, 70, 200, 400, 600, 800},
+													{50, 200, 500, 1000, 3000, 4000},
+													{25, 100, 250, 500, 1500, 2000},
+													{25, 100, 250, 500, 1500, 2000},
+													{50, 100, 300, 500, 1000, 1500},
+													{50, 100, 300, 500, 1000, 1500},
+													{50, 300, 500, 1000, 2000, 2500},
+													{1000, 5000, 20000, 40000, 80000, 1000000},
+													{500, 5000, 10000, 30000, 70000, 80000},
+													};
+													//intagration range for chi2
 
 //number of bins and max value of variable for noise events
 const Int_t nBinN[NVar] = {50, 50, 25, 50, 25, 50, 50, 50, 50, 50, 20,
 									100, 50};
+									//Number of bins for Noise
 const Double_t VarMaxN[NVar] = {50, 50, 25, 50, 25, 50, 50, 50, 50, 50,
 										20, 1000, 500};
+										//Maximum value of Noise
 
 const Int_t NSel = 44;//2018PbPb
 //const Int_t NSel = 4;//tmp
