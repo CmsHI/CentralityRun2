@@ -60,33 +60,25 @@ const Double_t VarMaxN[NVar] = {50, 50, 25, 50, 25, 50, 50, 50, 50, 50,
 										20, 1000, 500};
 										//Maximum value of Noise
 
-const Int_t NSel = 44;//2018PbPb
+const Int_t NSel = 30;//2018PbPb
 //const Int_t NSel = 4;//tmp
 //const Int_t NSel = 16;//2015PbPb
 
 //Name of selection 2018 PbPb{{{
-TString SelName[NSel] = {"", "2Trk", "PV", "CC", "Coin2th3", "Coin3th3",
+TString SelName[NSel] = {"", "PV", "CC", "Coin2th3", "Coin3th3",
 								"Coin4th3", "Coin5th3", "Coin2th4", "Coin3th4",
-								"Coin4th4", "Coin5th4", "2Trk_CC",
-								"2Trk_Coin3th3", "2Trk_Coin4th3", "2Trk_Coin5th3",
-								"2Trk_Coin2th4", "2Trk_Coin3th4", "2Trk_Coin4th4",
-								"PV_CC", "PV_Coin3th3", "PV_Coin4th3",
-								"PV_Coin5th3", "PV_Coin2th4", "PV_Coin3th4",
-								"PV_Coin4th4", "CC_Coin3th3", "CC_Coin4th3",
-								"CC_Coin5th3", "CC_Coin2th4", "CC_Coin3th4",
-								"CC_Coin4th4", "2Trk_CC_Coin3th3",
-								"2Trk_CC_Coin4th3", "2Trk_CC_Coin5th3",
-								"2Trk_CC_Coin2th4", "2Trk_CC_Coin3th4",
-								"2Trk_CC_Coin4th4", "PV_CC_Coin3th3",
+								"Coin4th4", "Coin5th4", "PV_CC", "PV_Coin3th3",
+								"PV_Coin4th3", "PV_Coin5th3", "PV_Coin2th4",
+								"PV_Coin3th4", "PV_Coin4th4", "CC_Coin3th3",
+								"CC_Coin4th3", "CC_Coin5th3", "CC_Coin2th4",
+								"CC_Coin3th4", "CC_Coin4th4", "PV_CC_Coin3th3",
 								"PV_CC_Coin4th3", "PV_CC_Coin5th3",
 								"PV_CC_Coin2th4", "PV_CC_Coin3th4",
 								"PV_CC_Coin4th4"};
 //}}}
 
 //Selection cut 2018 PbPb{{{
-TString Selection[NSel] = {
-									"1",
-									"(nTrk>=2)",
+TString Selection[NSel] = {"1",
 									"(pprimaryVertexFilter==1)",
 									"(pclusterCompatibilityFilter==1)",
 									"(phfCoincFilter2Th3==1)",
@@ -97,13 +89,6 @@ TString Selection[NSel] = {
 									"(phfCoincFilter3Th4==1)",
 									"(phfCoincFilter4Th4==1)",
 									"(phfCoincFilter5Th4==1)",
-									"(nTrk>=2&&pclusterCompatibilityFilter==1)",
-									"(nTrk>=2&&phfCoincFilter3Th3==1)",
-									"(nTrk>=2&&phfCoincFilter4Th3==1)",
-									"(nTrk>=2&&phfCoincFilter5Th3==1)",
-									"(nTrk>=2&&phfCoincFilter2Th4==1)",
-									"(nTrk>=2&&phfCoincFilter3Th4==1)",
-									"(nTrk>=2&&phfCoincFilter4Th4==1)",
 									"(pprimaryVertexFilter==1&&pclusterCompatibilityFilter==1)",
 									"(pprimaryVertexFilter==1&&phfCoincFilter3Th3==1)",
 									"(pprimaryVertexFilter==1&&phfCoincFilter4Th3==1)",
@@ -117,12 +102,6 @@ TString Selection[NSel] = {
 									"(pclusterCompatibilityFilter==1&&phfCoincFilter2Th4==1)",
 									"(pclusterCompatibilityFilter==1&&phfCoincFilter3Th4==1)",
 									"(pclusterCompatibilityFilter==1&&phfCoincFilter4Th4==1)",
-									"(nTrk>=2&&pclusterCompatibilityFilter==1&&phfCoincFilter3Th3==1)",
-									"(nTrk>=2&&pclusterCompatibilityFilter==1&&phfCoincFilter4Th3==1)",
-									"(nTrk>=2&&pclusterCompatibilityFilter==1&&phfCoincFilter5Th3==1)",
-									"(nTrk>=2&&pclusterCompatibilityFilter==1&&phfCoincFilter2Th4==1)",
-									"(nTrk>=2&&pclusterCompatibilityFilter==1&&phfCoincFilter3Th4==1)",
-									"(nTrk>=2&&pclusterCompatibilityFilter==1&&phfCoincFilter4Th4==1)",
 									"(pprimaryVertexFilter==1&&pclusterCompatibilityFilter==1&&phfCoincFilter3Th3==1)",
 									"(pprimaryVertexFilter==1&&pclusterCompatibilityFilter==1&&phfCoincFilter4Th3==1)",
 									"(pprimaryVertexFilter==1&&pclusterCompatibilityFilter==1&&phfCoincFilter5Th3==1)",
