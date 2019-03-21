@@ -135,7 +135,7 @@ void CutScanForScaleFactor(const Int_t ivar = 5, const Int_t MCN = 0)
 	}
 //}}}
 
-//Rebin set{{{
+//Rebin set. Use when stat. is low{{{
 	Int_t rebin = 1;
 	if(ivar == 0 || ivar == 1 || ivar == 2 || ivar == 3 || ivar == 4 ||
 		ivar == 5 || ivar == 6 || ivar == 7)
