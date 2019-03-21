@@ -35,8 +35,8 @@ const Double_t NormRangeMax[NVar] = {3000, 1500, 600, 1500, 600, 3000,
 												1500, 1500, 600, 1000, 2000, 100000,
 												60000};
 												//maximum of normalization range
-const Int_t NOC = 6;//Number of chi2 range cut
-const Double_t Chi2Range[NVar][NOC] = {{50, 200, 500, 1000, 3000, 4000},
+const Int_t Nchi = 6;//Number of chi2 range cut
+const Double_t Chi2Range[NVar][Nchi] = {{50, 200, 500, 1000, 3000, 4000},
 													{25, 100, 250, 500, 1500, 2000},
 													{20, 70, 200, 400, 600, 800},
 													{25, 100, 250, 500, 1500, 2000},
