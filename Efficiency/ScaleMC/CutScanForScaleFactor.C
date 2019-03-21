@@ -20,19 +20,19 @@
 //}}}
 
 //External functions{{{
-TH1D* ScaleTH1(TTree* t1, Int_t ivar, Int_t iiter, Double_t ScaleX, Double_t RangeCut, Int_t rebin)
+TH1D* ScaleTH1(TTree* t1, Int_t ivar, Int_t iiter, Double_t ScaleX, Double_t NormMin, Double_t NormMax, Int_t rebin)
 {
 //scale histogram{{{
 
 //make new bin{{{
-	Double_t tmpBinArr[nBinC[0]];
-	tmpBinArr[0] = 0;
+	Double_t tmpBinArr[nBinC[ivar]];
+	tmpBinArr[ivar] = 0;
 	Int_t NewnBin = 0;
 	for(Int_t ibin = 1; ibin < nBinC[0]+2; ibin++)
 	{
-		if(tmpBinArr[ibin-1] < NormRangeCut[0]) tmpBinArr[ibin] = tmpBinArr[ibin-1]+( VarMaxC[0]/(double)nBinC[0] );
-		else tmpBinArr[ibin] = tmpBinArr[ibin-1]+( VarW[0]*VarMaxC[0]/(double)nBinC[0] );
-		if(tmpBinArr[ibin] >= VarMaxC[0])
+		if(tmpBinArr[ibin-1] < BinBoundary[ivar]) tmpBinArr[ibin] = tmpBinArr[ibin-1]+( VarMaxC[ivar]/(double)nBinC[ivar] );
+		else tmpBinArr[ibin] = tmpBinArr[ibin-1]+( VarW[ivar]*VarMaxC[ivar]/(double)nBinC[ivar] );
+		if(tmpBinArr[ibin] >= VarMaxC[ivar])
 		{
 			NewnBin = ibin+1;
 			break;
@@ -42,8 +42,8 @@ TH1D* ScaleTH1(TTree* t1, Int_t ivar, Int_t iiter, Double_t ScaleX, Double_t Ran
 	NewBinArr[0] = 0;
 	for(Int_t ibin = 1; ibin < NewnBin; ibin++)
 	{
-		if(NewBinArr[ibin-1] < NormRangeCut[0]) NewBinArr[ibin] = NewBinArr[ibin-1]+( VarMaxC[0]/(double)nBinC[0] );
-		else NewBinArr[ibin] = NewBinArr[ibin-1]+( VarW[0]*VarMaxC[0]/(double)nBinC[0] );
+		if(NewBinArr[ibin-1] < BinBoundary[ivar]) NewBinArr[ibin] = NewBinArr[ibin-1]+( VarMaxC[ivar]/(double)nBinC[ivar] );
+		else NewBinArr[ibin] = NewBinArr[ibin-1]+( VarW[ivar]*VarMaxC[ivar]/(double)nBinC[ivar] );
 	}
 //}}}
 
@@ -51,7 +51,7 @@ TH1D* ScaleTH1(TTree* t1, Int_t ivar, Int_t iiter, Double_t ScaleX, Double_t Ran
 	t1->Draw(Form("%f*%s>>h1_%d", ScaleX, Vars[ivar].Data(), iiter), "");
 	FormTH1(h1, 1);
 	h1->Rebin(rebin);
-	h1->Scale(1./( h1->Integral(h1->GetXaxis()->FindBin(RangeCut), h1->GetXaxis()->FindBin(VarMaxC[0])) ));
+	h1->Scale(1./( h1->Integral(h1->GetXaxis()->FindBin(NormMin), h1->GetXaxis()->FindBin(NormMax)) ));
 	h1->Scale(1., "width");
 	return h1;
 //}}}
@@ -89,7 +89,7 @@ Double_t Getchi2(TH1D* href, TH1D* hcomp, Double_t xmin = -1, Double_t xmax = -1
 }
 //}}}
 
-void CutScanForScaleFactor(const Int_t ivar = 5, const Int_t MCN = 3)
+void CutScanForScaleFactor(const Int_t ivar = 5, const Int_t MCN = 0)
 {
 	SetStyle();
 
@@ -103,9 +103,10 @@ void CutScanForScaleFactor(const Int_t ivar = 5, const Int_t MCN = 3)
 
 	TString akaD = "PR326483";
 	TString akaM;
+	TString Suffix = "newCNT";
 
 //Set Names{{{
-	TFile* fdata = new TFile(Form("../../HistFiles/PbPb2018_%s_histo_newCNT.root", akaD.Data()), "READ");
+	TFile* fdata = new TFile(Form("../../HistFiles/PbPb2018_%s_histo_%s.root", akaD.Data(), Suffix.Data()), "READ");
 	TString fMC;
 	if(MCN == 0)
 	{
@@ -134,40 +135,47 @@ void CutScanForScaleFactor(const Int_t ivar = 5, const Int_t MCN = 3)
 	}
 //}}}
 
+//Rebin set{{{
 	Int_t rebin = 1;
-	if(MCN == 1 || MCN == 2) rebin = 15;
-	else if(MCN == 3) rebin = 5;
+	if(ivar == 0 || ivar == 1 || ivar == 2 || ivar == 3 || ivar == 4 ||
+		ivar == 5 || ivar == 6 || ivar == 7)
+	{
+		if(MCN == 1) rebin = 15;
+		else if(MCN == 2) rebin = 25;
+		else if(MCN == 3) rebin = 5;
+	}
+//}}}
 
 //Get trees{{{
 	TChain* t_evt = new TChain("hiEvtAnalyzer/HiTree");
 	TChain* t_skim = new TChain("skimanalysis/HltTree");
-	TChain* t_hlt = new TChain("hltanalysis/HltTree");
-	TChain* t_trk = new TChain("ppTrack/trackTree");
+	//TChain* t_hlt = new TChain("hltanalysis/HltTree");
+	//TChain* t_trk = new TChain("ppTrack/trackTree");
 	t_evt->Add(Form("%s", fMC.Data()));
 	t_skim->Add(Form("%s", fMC.Data()));
-	t_hlt->Add(Form("%s", fMC.Data()));
-	t_trk->Add(Form("%s", fMC.Data()));
+	//t_hlt->Add(Form("%s", fMC.Data()));
+	//t_trk->Add(Form("%s", fMC.Data()));
 	t_evt->AddFriend(t_skim);
-	t_evt->AddFriend(t_hlt);
-	t_evt->AddFriend(t_trk);
+	//t_evt->AddFriend(t_hlt);
+	//t_evt->AddFriend(t_trk);
 //}}}
 
-	const Int_t NOC = 6;//Number Of Cut
-	Double_t RangeCut[NOC] = {80, 100, 200, 300, 500, 1000};
 	const Int_t Niter = 60;
 	FILE* ftxt;
-	ftxt = fopen(Form("Scaled/ScaleFactor_scan_%s_%s_%s.txt", VarName[ivar].Data(), akaD.Data(), akaM.Data()), "w");
-	TFile* fout = new TFile(Form("Scaled/Scaled_MC_eff_scan_%s_%s_%s.root", VarName[ivar].Data(), akaD.Data(), akaM.Data()), "RECREATE");
+	ftxt = fopen(Form("Scaled/ScaleFactor_scan_%s_%s_%s_%s.txt", VarName[ivar].Data(), akaD.Data(), akaM.Data(), Suffix.Data()), "w");
+	TFile* fout = new TFile(Form("Scaled/Scaled_MC_eff_scan_%s_%s_%s_%s.root", VarName[ivar].Data(), akaD.Data(), akaM.Data(), Suffix.Data()), "RECREATE");
 	fout->cd();
 
-	for(Int_t icut = 0; icut < NOC; icut++)
-	{
-		TH1D* href = (TH1D*) fdata->Get(Form("h%s_PV_CC_Coin2th4", VarName[ivar].Data()));
-		FormTH1(href, 0);
-		href->Rebin(rebin);
-		href->Scale(1./href->Integral());
-		href->Scale(1., "width");
+//get data{{{
+	TH1D* href = (TH1D*) fdata->Get(Form("h%s_PV_CC_Coin2th4", VarName[ivar].Data()));
+	FormTH1(href, 0);
+	href->Rebin(rebin);
+	href->Scale(1./href->Integral( href->GetXaxis()->FindBin(NormRangeMin[ivar]), href->GetXaxis()->FindBin(NormRangeMax[ivar]) ));
+	href->Scale(1., "width");
+//}}}
 
+	for(Int_t ichi = 0; ichi < Nchi; ichi++)
+	{
 		TH1D* hMC[Niter];
 		TGraphErrors* g1 = new TGraphErrors(Niter);
 		Double_t chi2val[Niter];
@@ -180,8 +188,8 @@ void CutScanForScaleFactor(const Int_t ivar = 5, const Int_t MCN = 3)
 		for(Int_t iiter = 0; iiter < Niter; iiter++)
 		{
 			ScaleX[iiter] = ScaleMin+(variation/Niter)*iiter;
-			hMC[iiter] = ScaleTH1(t_evt, ivar, iiter, ScaleX[iiter], RangeCut[icut], rebin);
-			chi2val[iiter] = Getchi2(hMC[iiter], href, RangeCut[icut]);
+			hMC[iiter] = ScaleTH1(t_evt, ivar, iiter, ScaleX[iiter], NormRangeMin[ivar], NormRangeMax[ivar], rebin);
+			chi2val[iiter] = Getchi2(hMC[iiter], href, Chi2Range[ivar][ichi]);
 			g1->SetPoint(iiter, ScaleX[iiter], chi2val[iiter]);
 			if(chi2val[iiter] < chi2val[ibest]) ibest = iiter;
 		}
@@ -193,7 +201,7 @@ void CutScanForScaleFactor(const Int_t ivar = 5, const Int_t MCN = 3)
 		}
 //}}}
 
-		fprintf(ftxt, "%d: %f \t %f \n", (int)RangeCut[icut], ScaleX[ibest], chi2val[ibest]);
+		fprintf(ftxt, "%d: %f \t %f \n", (int)Chi2Range[ivar][ichi], ScaleX[ibest], chi2val[ibest]);
 
 //Draw comp{{{
 		TCanvas* c1 = new TCanvas("c1", "", 0, 0, 600, 600);
@@ -202,7 +210,7 @@ void CutScanForScaleFactor(const Int_t ivar = 5, const Int_t MCN = 3)
 		FormTH1(href, 0);
 		href->Draw("hist");
 		hMC[ibest]->Draw("samepe");
-		c1->SaveAs(Form("Scaled/Scaled_MC_Data_Comp_scan_%s_cut%d_%s_%s.pdf", VarName[ivar].Data(), (int)RangeCut[icut], akaD.Data(), akaM.Data()));
+		c1->SaveAs(Form("Scaled/Scaled_MC_Data_Comp_scan_%s_cut%d_%s_%s_%s.pdf", VarName[ivar].Data(), (int)Chi2Range[ivar][ichi], akaD.Data(), akaM.Data(), Suffix.Data()));
 //}}}
 
 //Draw chi2{{{
@@ -213,7 +221,7 @@ void CutScanForScaleFactor(const Int_t ivar = 5, const Int_t MCN = 3)
 		g1->GetYaxis()->CenterTitle();
 		g1->SetMarkerStyle(20);
 		g1->Draw("ap");
-		c2->SaveAs(Form("Scaled/Scale_factor_chi2_scan_%s_cut%d_%s_%s.pdf", VarName[ivar].Data(), (int)RangeCut[icut], akaD.Data(), akaM.Data()));
+		c2->SaveAs(Form("Scaled/Scale_factor_chi2_scan_%s_cut%d_%s_%s_%s.pdf", VarName[ivar].Data(), (int)Chi2Range[ivar][ichi], akaD.Data(), akaM.Data(), Suffix.Data()));
 //}}}
 
 //Draw ratio{{{
@@ -223,16 +231,16 @@ void CutScanForScaleFactor(const Int_t ivar = 5, const Int_t MCN = 3)
 		hratio->SetAxisRange(0, 1.2, "Y");
 		hratio->Divide(href);
 		hratio->Draw("pe");
-		SetLine(1, 0, 1, VarMaxC[0], 1, 0, 2);
-		c3->SaveAs(Form("Scaled/Scaled_ratio_scan_%s_cut%d_%s_%s.pdf", VarName[ivar].Data(), (int)RangeCut[icut], akaD.Data(), akaM.Data()));
+		SetLine(1, 0, 1, VarMaxC[ivar], 1, 0, 2);
+		c3->SaveAs(Form("Scaled/Scaled_ratio_scan_%s_cut%d_%s_%s_%s.pdf", VarName[ivar].Data(), (int)Chi2Range[ivar][ichi], akaD.Data(), akaM.Data(), Suffix.Data()));
 //}}}
 
 //Save plots{{{
-		g1->SetName(Form("Scalefactor_%s_%d", VarName[ivar].Data(), (int)RangeCut[icut]));
+		g1->SetName(Form("Scalefactor_%s_%d", VarName[ivar].Data(), (int)Chi2Range[ivar][ichi]));
 		g1->Write();
-		href->SetName(Form("h%s_ref%d", VarName[ivar].Data(), (int)RangeCut[icut]));
+		href->SetName(Form("h%s_ref%d", VarName[ivar].Data(), (int)Chi2Range[ivar][ichi]));
 		href->Write();
-		hMC[ibest]->SetName(Form("h%s_scaled%d", VarName[ivar].Data(), (int)RangeCut[icut]));
+		hMC[ibest]->SetName(Form("h%s_scaled%d", VarName[ivar].Data(), (int)Chi2Range[ivar][ichi]));
 		hMC[ibest]->Write();
 		hratio->Write();
 //}}}
