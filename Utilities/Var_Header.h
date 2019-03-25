@@ -18,7 +18,7 @@ TString VarName[NVar] = {"HF", "HFplus", "HFplusEta4", "HFminus",
 //number of bins and max value of variable for collision events
 const Double_t BinBoundary[NVar] = {500, 150, 100, 150, 100, 500, 150, 150,
 												300, 300, 300, 18000, 8000};
-const Int_t nBinC[NVar] = {12000, 300, 150, 300, 150, 12000, 300, 300, 300,
+const Int_t nBinC[NVar] = {6000, 300, 150, 300, 150, 6000, 300, 300, 300,
 									300, 400, 3600, 1000};//Number of bins collision
 const Double_t VarMaxC[NVar] = {6000, 3000, 1500, 3000, 1500, 6000, 3000,
 										3000, 3000, 3000, 4000, 180000, 100000};
